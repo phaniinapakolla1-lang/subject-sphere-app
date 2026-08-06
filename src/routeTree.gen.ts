@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedSubjectsIndexRouteImport } from './routes/_authenticated/subjects/index'
+import { Route as AuthenticatedSubjectsSubjectIdRouteImport } from './routes/_authenticated/subjects/$subjectId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,12 +47,19 @@ const AuthenticatedSubjectsIndexRoute =
     path: '/subjects/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSubjectsSubjectIdRoute =
+  AuthenticatedSubjectsSubjectIdRouteImport.update({
+    id: '/subjects/$subjectId',
+    path: '/subjects/$subjectId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/subjects/': typeof AuthenticatedSubjectsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -59,6 +67,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/subjects': typeof AuthenticatedSubjectsIndexRoute
 }
 export interface FileRoutesById {
@@ -68,13 +77,26 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/_authenticated/subjects/': typeof AuthenticatedSubjectsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password' | '/dashboard' | '/subjects/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dashboard'
+    | '/subjects/$subjectId'
+    | '/subjects/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password' | '/dashboard' | '/subjects'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dashboard'
+    | '/subjects/$subjectId'
+    | '/subjects'
   id:
     | '__root__'
     | '/'
@@ -82,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/dashboard'
+    | '/_authenticated/subjects/$subjectId'
     | '/_authenticated/subjects/'
   fileRoutesById: FileRoutesById
 }
@@ -136,16 +159,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSubjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/subjects/$subjectId': {
+      id: '/_authenticated/subjects/$subjectId'
+      path: '/subjects/$subjectId'
+      fullPath: '/subjects/$subjectId'
+      preLoaderRoute: typeof AuthenticatedSubjectsSubjectIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSubjectsSubjectIdRoute: typeof AuthenticatedSubjectsSubjectIdRoute
   AuthenticatedSubjectsIndexRoute: typeof AuthenticatedSubjectsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSubjectsSubjectIdRoute: AuthenticatedSubjectsSubjectIdRoute,
   AuthenticatedSubjectsIndexRoute: AuthenticatedSubjectsIndexRoute,
 }
 
