@@ -51,8 +51,7 @@ export function useOne<K extends TableName>(table: K, id: string | undefined) {
     queryKey: [table, "one", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from(table)
+      const { data, error } = await (supabase.from(table) as any)
         .select("*")
         .eq("id", id as string)
         .maybeSingle();
@@ -111,7 +110,7 @@ export function useRemove<K extends TableName>(table: K, message = "Deleted") {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(table).delete().eq("id", id);
+      const { error } = await (supabase.from(table) as any).delete().eq("id", id);
       if (error) throw error;
       return id;
     },
