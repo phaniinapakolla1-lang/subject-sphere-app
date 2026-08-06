@@ -335,7 +335,7 @@ function Dashboard() {
 function SubjectProgress({ id, name, color }: { id: string; name: string; color: string }) {
   const topics = useList("topics", {
     key: ["progress", id],
-    build: (q) => q.eq("subject_id", id).select("id,completed"),
+    build: (q) => q.eq("subject_id", id),
   });
   const list = topics.data ?? [];
   const done = list.filter((t) => t.completed).length;
