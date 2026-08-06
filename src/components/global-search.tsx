@@ -23,7 +23,7 @@ import {
 type Hit = {
   id: string;
   label: string;
-  sub?: string;
+  sub?: string | undefined;
   group: string;
   icon: React.ElementType;
   go: () => void;
