@@ -390,7 +390,7 @@ function SubjectCard({
             <DropdownMenuItem onClick={() => onMove(1)}>
               <ArrowDown className="size-4" /> Move down
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onDelete} variant="destructive">
+            <DropdownMenuItem onClick={onDelete} className="text-destructive">
               <Trash2 className="size-4" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
