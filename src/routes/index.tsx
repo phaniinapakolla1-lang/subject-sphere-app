@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "One private workspace for subjects, topics, notes, flashcards, revision, exams and study analytics.",
+          "Plan, learn, revise and track everything for your exams in one premium personal workspace. Subjects, topics, notes, flashcards, timers and progress analytics.",
       },
     ],
   }),

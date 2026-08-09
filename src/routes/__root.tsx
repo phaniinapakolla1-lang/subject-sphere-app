@@ -82,10 +82,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "StudyOS is a personal study management system: subjects, topics, notes, flashcards, revision, exams and progress in one workspace.",
+          "Plan, learn, revise and track everything for your exams in one premium personal workspace. Subjects, topics, notes, flashcards, timers and progress analytics.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "StudyOS — Your personal study operating system" },
+      { name: "twitter:title", content: "StudyOS — Your personal study operating system" },
+      { property: "og:description", content: "Plan, learn, revise and track everything for your exams in one premium personal workspace. Subjects, topics, notes, flashcards, timers and progress analytics." },
+      { name: "twitter:description", content: "Plan, learn, revise and track everything for your exams in one premium personal workspace. Subjects, topics, notes, flashcards, timers and progress analytics." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/6578a2c8-4d87-463d-9d3e-449c0462582e" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/6578a2c8-4d87-463d-9d3e-449c0462582e" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -95,7 +101,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
