@@ -64,7 +64,7 @@ export function GlobalSearch({
         ]);
 
       const hits: Hit[] = [];
-      subjects.data?.forEach((s) =>
+      subjects.data?.forEach((s: any) =>
         hits.push({
           id: s.id,
           label: s.name,
@@ -74,7 +74,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/subjects/$subjectId", params: { subjectId: s.id } }),
         }),
       );
-      units.data?.forEach((u) =>
+      units.data?.forEach((u: any) =>
         hits.push({
           id: u.id,
           label: u.name,
@@ -84,7 +84,7 @@ export function GlobalSearch({
             navigate({ to: "/subjects/$subjectId", params: { subjectId: u.subject_id } }),
         }),
       );
-      topics.data?.forEach((t) =>
+      topics.data?.forEach((t: any) =>
         hits.push({
           id: t.id,
           label: t.title,
@@ -93,7 +93,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/topics/$topicId", params: { topicId: t.id } }),
         }),
       );
-      notes.data?.forEach((n) =>
+      notes.data?.forEach((n: any) =>
         hits.push({
           id: n.id,
           label: n.title,
@@ -102,7 +102,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/notes" }),
         }),
       );
-      cards.data?.forEach((c) =>
+      cards.data?.forEach((c: any) =>
         hits.push({
           id: c.id,
           label: c.question,
@@ -111,7 +111,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/flashcards" }),
         }),
       );
-      assignments.data?.forEach((a) =>
+      assignments.data?.forEach((a: any) =>
         hits.push({
           id: a.id,
           label: a.title,
@@ -120,7 +120,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/assignments" }),
         }),
       );
-      exams.data?.forEach((e) =>
+      exams.data?.forEach((e: any) =>
         hits.push({
           id: e.id,
           label: e.name,
@@ -129,7 +129,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/exams" }),
         }),
       );
-      papers.data?.forEach((p) =>
+      papers.data?.forEach((p: any) =>
         hits.push({
           id: p.id,
           label: p.title,
