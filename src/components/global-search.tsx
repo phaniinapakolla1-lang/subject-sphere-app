@@ -10,7 +10,7 @@ import {
   NotebookPen,
   FileText,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/lib/data";
 import {
   CommandDialog,
   CommandEmpty,
@@ -52,14 +52,14 @@ export function GlobalSearch({
       const like = `%${debounced}%`;
       const [subjects, units, topics, notes, cards, assignments, exams, papers] =
         await Promise.all([
-          supabase.from("subjects").select("id,name,code").ilike("name", like).limit(5),
-          supabase.from("units").select("id,name,subject_id").ilike("name", like).limit(5),
-          supabase.from("topics").select("id,title,subject_id").ilike("title", like).limit(8),
-          supabase.from("notes").select("id,title").ilike("title", like).limit(5),
-          supabase.from("flashcards").select("id,question").ilike("question", like).limit(5),
-          supabase.from("assignments").select("id,title").ilike("title", like).limit(5),
-          supabase.from("exams").select("id,name").ilike("name", like).limit(5),
-          supabase.from("papers").select("id,title").ilike("title", like).limit(5),
+          db("subjects").select("id,name,code").ilike("name", like).limit(5),
+          db("units").select("id,name,subject_id").ilike("name", like).limit(5),
+          db("topics").select("id,title,subject_id").ilike("title", like).limit(8),
+          db("notes").select("id,title").ilike("title", like).limit(5),
+          db("flashcards").select("id,question").ilike("question", like).limit(5),
+          db("assignments").select("id,title").ilike("title", like).limit(5),
+          db("exams").select("id,name").ilike("name", like).limit(5),
+          db("papers").select("id,title").ilike("title", like).limit(5),
         ]);
 
       const hits: Hit[] = [];

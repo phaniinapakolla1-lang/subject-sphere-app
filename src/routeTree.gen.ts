@@ -27,6 +27,7 @@ import { Route as AuthenticatedRevisionRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin/dashboard'
+import { Route as AdminAdminStudentsRouteImport } from './routes/_admin/admin/students'
 import { Route as AuthenticatedSubjectsIndexRouteImport } from './routes/_authenticated/subjects/index'
 import { Route as AuthenticatedSubjectsSubjectIdRouteImport } from './routes/_authenticated/subjects/$subjectId'
 import { Route as AuthenticatedTopicsTopicIdRouteImport } from './routes/_authenticated/topics/$topicId'
@@ -120,6 +121,11 @@ const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   path: '/admin/dashboard',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAdminStudentsRoute = AdminAdminStudentsRouteImport.update({
+  id: '/admin/students',
+  path: '/admin/students',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AuthenticatedSubjectsIndexRoute =
   AuthenticatedSubjectsIndexRouteImport.update({
     id: '/subjects/',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/students': typeof AdminAdminStudentsRoute
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/subjects/': typeof AuthenticatedSubjectsIndexRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/students': typeof AdminAdminStudentsRoute
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/subjects': typeof AuthenticatedSubjectsIndexRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/_admin/admin/students': typeof AdminAdminStudentsRoute
   '/_authenticated/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/_authenticated/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/_authenticated/subjects/': typeof AuthenticatedSubjectsIndexRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/timer'
     | '/admin/dashboard'
+    | '/admin/students'
     | '/subjects/$subjectId'
     | '/topics/$topicId'
     | '/subjects/'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/timer'
     | '/admin/dashboard'
+    | '/admin/students'
     | '/subjects/$subjectId'
     | '/topics/$topicId'
     | '/subjects'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/timer'
     | '/_admin/admin/dashboard'
+    | '/_admin/admin/students'
     | '/_authenticated/subjects/$subjectId'
     | '/_authenticated/topics/$topicId'
     | '/_authenticated/subjects/'
@@ -411,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminDashboardRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/_admin/admin/students': {
+      id: '/_admin/admin/students'
+      path: '/admin/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AdminAdminStudentsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_authenticated/subjects/': {
       id: '/_authenticated/subjects/'
       path: '/subjects'
@@ -437,10 +456,12 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteRouteChildren {
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
+  AdminAdminStudentsRoute: typeof AdminAdminStudentsRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminStudentsRoute: AdminAdminStudentsRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
