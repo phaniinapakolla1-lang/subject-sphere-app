@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { stopDemo } from "@/lib/demo";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ const NAV = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, demo } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { theme, setTheme } = useTheme();
@@ -75,7 +76,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/student-login", replace: true });
+  }
+
+  function leaveDemo(to: string) {
+    stopDemo();
+    qc.clear();
+    window.location.href = to;
   }
 
   const initials = (user?.user_metadata?.["full_name"] ?? user?.email ?? "S")
@@ -146,6 +153,21 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       <div className="lg:pl-60">
+        {demo && (
+          <div className="flex flex-wrap items-center justify-center gap-3 border-b border-primary/30 bg-primary/10 px-4 py-2 text-center text-xs text-foreground">
+            <span className="font-medium">
+              DEMO MODE — sample data only, nothing you change is saved.
+            </span>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={() => leaveDemo("/")}>
+                Back to homepage
+              </Button>
+              <Button size="sm" onClick={() => leaveDemo("/student-login")}>
+                Get a student account
+              </Button>
+            </div>
+          </div>
+        )}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border px-4 glass sm:px-6">
           <Button
             variant="ghost"

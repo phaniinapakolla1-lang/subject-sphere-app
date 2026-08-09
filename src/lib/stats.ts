@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/lib/data";
 
 export type Overview = {
   subjects: number;
@@ -30,16 +31,15 @@ export function useOverview() {
       const since = new Date();
       since.setDate(since.getDate() - 89);
       const [subjectsRes, topicsRes, sessionsRes] = await Promise.all([
-        supabase.from("subjects").select("id").eq("archived", false),
-        supabase.from("topics").select("id,completed,weak,bookmarked,revision_count"),
-        supabase
-          .from("study_sessions")
+        db("subjects").select("id").eq("archived", false),
+        db("topics").select("id,completed,weak,bookmarked,revision_count"),
+        db("study_sessions")
           .select("minutes,started_at")
           .gte("started_at", since.toISOString()),
       ]);
 
-      const topics = topicsRes.data ?? [];
-      const sessions = sessionsRes.data ?? [];
+      const topics: any[] = topicsRes.data ?? [];
+      const sessions: any[] = sessionsRes.data ?? [];
 
       const today = startOfDay(new Date()).getTime();
       const weekStart = today - 6 * 86400000;

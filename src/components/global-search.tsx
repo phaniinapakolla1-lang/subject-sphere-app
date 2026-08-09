@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import {
   NotebookPen,
   FileText,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/lib/data";
 import {
   CommandDialog,
   CommandEmpty,
@@ -52,18 +53,18 @@ export function GlobalSearch({
       const like = `%${debounced}%`;
       const [subjects, units, topics, notes, cards, assignments, exams, papers] =
         await Promise.all([
-          supabase.from("subjects").select("id,name,code").ilike("name", like).limit(5),
-          supabase.from("units").select("id,name,subject_id").ilike("name", like).limit(5),
-          supabase.from("topics").select("id,title,subject_id").ilike("title", like).limit(8),
-          supabase.from("notes").select("id,title").ilike("title", like).limit(5),
-          supabase.from("flashcards").select("id,question").ilike("question", like).limit(5),
-          supabase.from("assignments").select("id,title").ilike("title", like).limit(5),
-          supabase.from("exams").select("id,name").ilike("name", like).limit(5),
-          supabase.from("papers").select("id,title").ilike("title", like).limit(5),
+          db("subjects").select("id,name,code").ilike("name", like).limit(5),
+          db("units").select("id,name,subject_id").ilike("name", like).limit(5),
+          db("topics").select("id,title,subject_id").ilike("title", like).limit(8),
+          db("notes").select("id,title").ilike("title", like).limit(5),
+          db("flashcards").select("id,question").ilike("question", like).limit(5),
+          db("assignments").select("id,title").ilike("title", like).limit(5),
+          db("exams").select("id,name").ilike("name", like).limit(5),
+          db("papers").select("id,title").ilike("title", like).limit(5),
         ]);
 
       const hits: Hit[] = [];
-      subjects.data?.forEach((s) =>
+      subjects.data?.forEach((s: any) =>
         hits.push({
           id: s.id,
           label: s.name,
@@ -73,7 +74,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/subjects/$subjectId", params: { subjectId: s.id } }),
         }),
       );
-      units.data?.forEach((u) =>
+      units.data?.forEach((u: any) =>
         hits.push({
           id: u.id,
           label: u.name,
@@ -83,7 +84,7 @@ export function GlobalSearch({
             navigate({ to: "/subjects/$subjectId", params: { subjectId: u.subject_id } }),
         }),
       );
-      topics.data?.forEach((t) =>
+      topics.data?.forEach((t: any) =>
         hits.push({
           id: t.id,
           label: t.title,
@@ -92,7 +93,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/topics/$topicId", params: { topicId: t.id } }),
         }),
       );
-      notes.data?.forEach((n) =>
+      notes.data?.forEach((n: any) =>
         hits.push({
           id: n.id,
           label: n.title,
@@ -101,7 +102,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/notes" }),
         }),
       );
-      cards.data?.forEach((c) =>
+      cards.data?.forEach((c: any) =>
         hits.push({
           id: c.id,
           label: c.question,
@@ -110,7 +111,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/flashcards" }),
         }),
       );
-      assignments.data?.forEach((a) =>
+      assignments.data?.forEach((a: any) =>
         hits.push({
           id: a.id,
           label: a.title,
@@ -119,7 +120,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/assignments" }),
         }),
       );
-      exams.data?.forEach((e) =>
+      exams.data?.forEach((e: any) =>
         hits.push({
           id: e.id,
           label: e.name,
@@ -128,7 +129,7 @@ export function GlobalSearch({
           go: () => navigate({ to: "/exams" }),
         }),
       );
-      papers.data?.forEach((p) =>
+      papers.data?.forEach((p: any) =>
         hits.push({
           id: p.id,
           label: p.title,
