@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import { demoDelete, demoFrom, demoInsert, demoUpdate, isDemo } from "@/lib/demo";
 
 export type Tables = Database["public"]["Tables"];
 export type TableName = keyof Tables & string;
@@ -27,6 +28,20 @@ export type Resource = Row<"resources">;
 export type StudySession = Row<"study_sessions">;
 export type Profile = Row<"profiles">;
 
+/** Table entry point that transparently swaps to the in-memory demo store. */
+export function db(table: string): any {
+  return isDemo() ? demoFrom(table) : (supabase.from(table as TableName) as any);
+}
+
+export const DEMO_LOCKED_MESSAGE =
+  "This feature is available after creating an account.";
+
+export function demoGuard(): boolean {
+  if (!isDemo()) return false;
+  toast.info(DEMO_LOCKED_MESSAGE);
+  return true;
+}
+
 type Builder = (q: any) => any;
 
 export function useList<K extends TableName>(
@@ -37,7 +52,7 @@ export function useList<K extends TableName>(
     queryKey: [table, ...(opts?.key ?? [])],
     enabled: opts?.enabled ?? true,
     queryFn: async () => {
-      let q: any = supabase.from(table).select("*");
+      let q: any = db(table).select("*");
       if (opts?.build) q = opts.build(q);
       const { data, error } = await q;
       if (error) throw error;
@@ -51,7 +66,7 @@ export function useOne<K extends TableName>(table: K, id: string | undefined) {
     queryKey: [table, "one", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await (supabase.from(table) as any)
+      const { data, error } = await db(table)
         .select("*")
         .eq("id", id as string)
         .maybeSingle();
@@ -71,6 +86,7 @@ export function useCreate<K extends TableName>(table: K, message?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (values: Insert<K>) => {
+      if (isDemo()) return demoInsert(table, values) as Row<K>;
       const { data, error } = await (supabase.from(table) as any)
         .insert(values as any)
         .select()
@@ -90,6 +106,7 @@ export function useUpdate<K extends TableName>(table: K, opts?: { silent?: boole
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, values }: { id: string; values: Update<K> }) => {
+      if (isDemo()) return demoUpdate(table, id, values) as Row<K>;
       const { data, error } = await (supabase.from(table) as any)
         .update(values as any)
         .eq("id", id)
@@ -110,6 +127,7 @@ export function useRemove<K extends TableName>(table: K, message = "Deleted") {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      if (isDemo()) return demoDelete(table, id);
       const { error } = await (supabase.from(table) as any).delete().eq("id", id);
       if (error) throw error;
       return id;
