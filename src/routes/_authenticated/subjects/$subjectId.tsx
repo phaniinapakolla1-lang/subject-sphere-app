@@ -287,7 +287,9 @@ function SubjectDetail() {
               onEdit={() => openUnit(u)}
               onDelete={() => removeUnit.mutate(u.id)}
               onMove={(d) => moveUnit(u, d)}
-              onAddTopic={(title) => addTopic(u.id, title)}
+              onAddTopic={(title, tpl) => addTopic(u.id, title, tpl)}
+              onBulkAddTopics={(titles, tpl) => bulkAddTopics(u.id, titles, tpl)}
+
               onTopicChange={(id, values) => updateTopic.mutate({ id, values })}
               onTopicDelete={(id) => removeTopic.mutate(id)}
               onTopicDuplicate={duplicateTopic}
