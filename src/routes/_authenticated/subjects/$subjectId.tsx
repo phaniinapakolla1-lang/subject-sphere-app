@@ -432,11 +432,18 @@ function UnitBlock({
         ))}
       </ul>
 
+      {topics.length === 0 && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          No topics in this unit yet — add your first one below.
+        </p>
+      )}
+
       <form
-        className="mt-3 flex gap-2"
+        className="mt-3 flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          onAddTopic(newTopic);
+          if (!newTopic.trim()) return;
+          onAddTopic(newTopic, template);
           setNewTopic("");
         }}
       >
@@ -444,16 +451,67 @@ function UnitBlock({
           value={newTopic}
           onChange={(e) => setNewTopic(e.target.value)}
           placeholder="Add a topic…"
-          className="h-9"
+          className="h-9 min-w-[180px] flex-1"
         />
-        <Button type="submit" size="sm" variant="secondary">
-          <Check className="size-4" /> Add
+        <Select value={template} onValueChange={(v) => setTemplate(v as "blank" | "standard")}>
+          <SelectTrigger className="h-9 w-full sm:w-[190px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="blank">Blank topic</SelectItem>
+            <SelectItem value="standard">📋 Standard template</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button type="submit" size="sm" variant="secondary" disabled={busy}>
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Add
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => setBulkOpen(true)}>
+          <ListPlus className="size-4" /> Add multiple
         </Button>
       </form>
 
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        Difficulty options: {DIFFICULTIES.join(", ")}
-      </p>
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>📋 Add multiple topics</DialogTitle>
+            <DialogDescription>
+              Paste one topic per line. Numbering like “1.” or bullets are removed automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={10}
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            placeholder={"Introduction\nDatabase\nDBMS\nKeys"}
+          />
+          {bulkNames.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {bulkNames.length} topics will be created.
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setBulkOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!bulkNames.length || busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  await onBulkAddTopics(bulkNames, template);
+                  setBulkText("");
+                  setBulkOpen(false);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {busy && <Loader2 className="size-4 animate-spin" />} Create {bulkNames.length} topics
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
+
