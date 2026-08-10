@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -7,13 +7,24 @@ import {
   Eye,
   Loader2,
   Pencil,
+  Plus,
   RefreshCw,
+  Sparkles,
   Star,
+  Trash2,
   TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useOne, useUpdate, type Topic } from "@/lib/data";
-import { TOPIC_FIELDS, TOPIC_GROUPS, PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
+import {
+  TOPIC_FIELDS,
+  TOPIC_GROUPS,
+  PRIORITIES,
+  DIFFICULTIES,
+  nextRevisionDate,
+} from "@/lib/topic-schema";
+import { applySections, slug, titleCase } from "@/lib/smart-paste";
+import { SmartPasteDialog } from "@/components/smart-paste-dialog";
 import { renderMarkdown } from "@/lib/markdown";
 import { ResourceManager } from "@/components/resource-manager";
 import { PageHeader } from "@/components/ui-kit";
@@ -56,7 +67,30 @@ function TopicEditor() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [smartOpen, setSmartOpen] = useState(false);
   const loaded = useRef(false);
+
+  const knownKeys = useMemo(() => new Set(TOPIC_FIELDS.map((f) => f.key)), []);
+  const customKeys = useMemo(
+    () => Object.keys(content).filter((k) => !knownKeys.has(k)),
+    [content, knownKeys],
+  );
+
+  function setField(key: string, value: string) {
+    setContent((c) => ({ ...c, [key]: value }));
+    setDirty(true);
+  }
+
+  function addCustomSection() {
+    const name = window.prompt("Section title (e.g. Exam Points)");
+    if (!name?.trim()) return;
+    const key = slug(name);
+    if (content[key] !== undefined) {
+      toast.info("That section already exists.");
+      return;
+    }
+    setField(key, "");
+  }
 
   useEffect(() => {
     if (topic.data && !loaded.current) {
@@ -94,6 +128,15 @@ function TopicEditor() {
     toast.success(`Revision ${count} logged`);
   }
 
+  function applySmartPaste(
+    sections: Parameters<typeof applySections>[1],
+    mode: "replace" | "append",
+  ) {
+    setContent((c) => applySections(c, sections, mode));
+    setDirty(true);
+    toast.success(`${sections.length} sections added to this topic`);
+  }
+
   if (topic.isLoading) {
     return (
       <div className="flex justify-center py-20">
@@ -121,10 +164,14 @@ function TopicEditor() {
             <span className="mr-2 text-xs text-muted-foreground">
               {saving ? "Saving…" : dirty ? "Unsaved" : "All changes saved"}
             </span>
+            <Button size="sm" onClick={() => setSmartOpen(true)}>
+              <Sparkles className="size-4" /> Paste &amp; auto-organize
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setPreview((p) => !p)}>
               {preview ? <Pencil className="size-4" /> : <Eye className="size-4" />}
               {preview ? "Edit" : "Preview"}
             </Button>
+
             <Button size="sm" onClick={revise}>
               <RefreshCw className="size-4" /> Log revision
             </Button>
@@ -238,6 +285,9 @@ function TopicEditor() {
               {g.label}
             </TabsTrigger>
           ))}
+          <TabsTrigger value="sections">
+            Sections{customKeys.length ? ` (${customKeys.length})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="resources">Resources</TabsTrigger>
         </TabsList>
 
@@ -261,10 +311,7 @@ function TopicEditor() {
                     rows={f.rows ?? 4}
                     placeholder={f.placeholder}
                     value={content[f.key] ?? ""}
-                    onChange={(e) => {
-                      setContent({ ...content, [f.key]: e.target.value });
-                      setDirty(true);
-                    }}
+                    onChange={(e) => setField(f.key, e.target.value)}
                   />
                 )}
               </div>
@@ -272,10 +319,66 @@ function TopicEditor() {
           </TabsContent>
         ))}
 
+        <TabsContent value="sections" className="space-y-4">
+          {customKeys.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No extra sections yet. Use Smart Paste or add your own section below.
+            </p>
+          )}
+          {customKeys.map((key) => (
+            <div key={key} className="panel p-4">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {titleCase(key.replace(/_/g, " "))}
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Delete section"
+                  className="text-destructive"
+                  onClick={() => {
+                    setContent((c) => {
+                      const next = { ...c };
+                      delete next[key];
+                      return next;
+                    });
+                    setDirty(true);
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+              {preview ? (
+                <div
+                  className="prose-studyos mt-2 text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(content[key] ?? "") }}
+                />
+              ) : (
+                <Textarea
+                  className="mt-2 resize-y border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                  rows={5}
+                  value={content[key] ?? ""}
+                  onChange={(e) => setField(key, e.target.value)}
+                />
+              )}
+            </div>
+          ))}
+          <Button variant="outline" size="sm" onClick={addCustomSection}>
+            <Plus className="size-4" /> Add custom section
+          </Button>
+        </TabsContent>
+
         <TabsContent value="resources">
           <ResourceManager topicId={t.id} subjectId={t.subject_id} />
         </TabsContent>
       </Tabs>
+
+      <SmartPasteDialog
+        open={smartOpen}
+        onOpenChange={setSmartOpen}
+        hasExistingContent={Object.values(content).some((v) => (v ?? "").trim())}
+        onSave={applySmartPaste}
+      />
     </div>
   );
 }

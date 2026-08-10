@@ -7,13 +7,18 @@ import {
   Bookmark,
   Check,
   Copy,
+  FileStack,
+  ListPlus,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Plus,
+  Sparkles,
   Star,
   Trash2,
   TriangleAlert,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import {
   useCreate,
@@ -24,7 +29,8 @@ import {
   type Topic,
   type Unit,
 } from "@/lib/data";
-import { PRIORITIES, DIFFICULTIES } from "@/lib/topic-schema";
+import { PRIORITIES } from "@/lib/topic-schema";
+import { parseTopicList, parseUnitList, standardTemplateContent } from "@/lib/smart-paste";
 import { EmptyState, PageHeader } from "@/components/ui-kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +42,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -90,11 +97,16 @@ function SubjectDetail() {
   const [unitDialog, setUnitDialog] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [unitDraft, setUnitDraft] = useState({
+    number: "",
     name: "",
     description: "",
     estimated_hours: "",
     priority: "medium",
   });
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importing, setImporting] = useState(false);
+  const importPreview = parseUnitList(importText);
 
   const allTopics = topics.data ?? [];
   const done = allTopics.filter((t) => t.completed).length;
@@ -103,6 +115,7 @@ function SubjectDetail() {
   function openUnit(u?: Unit) {
     setEditingUnit(u ?? null);
     setUnitDraft({
+      number: "",
       name: u?.name ?? "",
       description: u?.description ?? "",
       estimated_hours: u?.estimated_hours?.toString() ?? "",
@@ -111,28 +124,56 @@ function SubjectDetail() {
     setUnitDialog(true);
   }
 
+  function composeUnitName() {
+    const name = unitDraft.name.trim();
+    const number = unitDraft.number.trim();
+    if (!number) return name;
+    const label = /^unit/i.test(number) ? number : `Unit ${number}`;
+    return name ? `${label} — ${name}` : label;
+  }
+
   async function saveUnit() {
-    if (!unitDraft.name.trim() || !user) return;
+    const finalName = composeUnitName();
+    if (!finalName || !user) {
+      toast.info("Give this unit a number or a name.");
+      return;
+    }
     const values = {
-      name: unitDraft.name.trim(),
+      name: finalName,
       description: unitDraft.description || null,
       estimated_hours: unitDraft.estimated_hours ? Number(unitDraft.estimated_hours) : 0,
       priority: unitDraft.priority,
     };
     if (editingUnit) await updateUnit.mutateAsync({ id: editingUnit.id, values });
-    else
-      await createTopicless(values);
+    else await createNewUnit(values);
     setUnitDialog(false);
   }
 
-  async function createTopicless(values: Record<string, unknown>) {
+  async function createNewUnit(values: Record<string, unknown>, offset = 0) {
     if (!user) return;
     await createUnit.mutateAsync({
       ...(values as { name: string }),
       subject_id: subjectId,
       user_id: user.id,
-      position: (units.data?.length ?? 0) + 1,
+      position: (units.data?.length ?? 0) + 1 + offset,
     });
+  }
+
+  async function importUnits() {
+    if (!user || !importPreview.length) return;
+    setImporting(true);
+    try {
+      for (let i = 0; i < importPreview.length; i += 1) {
+        await createNewUnit({ name: importPreview[i]!.name, priority: "medium" }, i);
+      }
+      toast.success(`${importPreview.length} units created`);
+      setImportText("");
+      setImportOpen(false);
+    } catch {
+      toast.error("Could not create all units. Please try again.");
+    } finally {
+      setImporting(false);
+    }
   }
 
   function moveUnit(u: Unit, dir: -1 | 1) {
@@ -145,15 +186,32 @@ function SubjectDetail() {
     updateUnit.mutate({ id: other.id, values: { position: u.position } });
   }
 
-  async function addTopic(unitId: string, title: string) {
+  async function addTopic(
+    unitId: string,
+    title: string,
+    template: TopicTemplate = "blank",
+    offset = 0,
+  ) {
     if (!user || !title.trim()) return;
     await createTopic.mutateAsync({
       title: title.trim(),
       unit_id: unitId,
       subject_id: subjectId,
       user_id: user.id,
-      position: allTopics.filter((t) => t.unit_id === unitId).length + 1,
+      content: template === "standard" ? standardTemplateContent() : {},
+      position: allTopics.filter((t) => t.unit_id === unitId).length + 1 + offset,
     });
+  }
+
+  async function bulkAddTopics(unitId: string, titles: string[], template: TopicTemplate) {
+    try {
+      for (let i = 0; i < titles.length; i += 1) {
+        await addTopic(unitId, titles[i]!, template, i);
+      }
+      toast.success(`${titles.length} topics created`);
+    } catch {
+      toast.error("Could not create all topics. Please try again.");
+    }
   }
 
   async function duplicateTopic(t: Topic) {
@@ -184,9 +242,14 @@ function SubjectDetail() {
         title={subject.data?.name ?? "Subject"}
         subtitle={subject.data?.description ?? "Units and topics"}
         actions={
-          <Button onClick={() => openUnit()}>
-            <Plus className="size-4" /> Add unit
-          </Button>
+          <>
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <FileStack className="size-4" /> Import units
+            </Button>
+            <Button onClick={() => openUnit()}>
+              <Plus className="size-4" /> Add unit
+            </Button>
+          </>
         }
       />
 
@@ -217,7 +280,9 @@ function SubjectDetail() {
               onEdit={() => openUnit(u)}
               onDelete={() => removeUnit.mutate(u.id)}
               onMove={(d) => moveUnit(u, d)}
-              onAddTopic={(title) => addTopic(u.id, title)}
+              onAddTopic={(title, tpl) => addTopic(u.id, title, tpl)}
+              onBulkAddTopics={(titles, tpl) => bulkAddTopics(u.id, titles, tpl)}
+
               onTopicChange={(id, values) => updateTopic.mutate({ id, values })}
               onTopicDelete={(id) => removeTopic.mutate(id)}
               onTopicDuplicate={duplicateTopic}
@@ -232,33 +297,44 @@ function SubjectDetail() {
             <DialogTitle>{editingUnit ? "Edit unit" : "New unit"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
+            {!editingUnit && (
+              <div className="space-y-2">
+                <Label>Unit number</Label>
+                <Input
+                  autoFocus
+                  value={unitDraft.number}
+                  onChange={(e) => setUnitDraft({ ...unitDraft, number: e.target.value })}
+                  placeholder="1"
+                />
+              </div>
+            )}
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{editingUnit ? "Name" : "Unit name"}</Label>
               <Input
                 value={unitDraft.name}
                 onChange={(e) => setUnitDraft({ ...unitDraft, name: e.target.value })}
-                placeholder="Unit 1 — Process Management"
+                placeholder={editingUnit ? "Unit 1 — Process Management" : "Introduction to DBMS"}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveUnit();
+                }}
               />
             </div>
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>Description (optional)</Label>
               <Textarea
-                rows={3}
+                rows={2}
                 value={unitDraft.description}
-                onChange={(e) =>
-                  setUnitDraft({ ...unitDraft, description: e.target.value })
-                }
+                onChange={(e) => setUnitDraft({ ...unitDraft, description: e.target.value })}
               />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Estimated hours</Label>
                 <Input
                   type="number"
                   value={unitDraft.estimated_hours}
-                  onChange={(e) =>
-                    setUnitDraft({ ...unitDraft, estimated_hours: e.target.value })
-                  }
+                  onChange={(e) => setUnitDraft({ ...unitDraft, estimated_hours: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -289,9 +365,45 @@ function SubjectDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📚 Import units</DialogTitle>
+            <DialogDescription>
+              Paste one unit per line — unit numbers and titles are detected automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={8}
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder={"Unit 1 - Introduction\nUnit 2 - Database Models\nUnit 3 - SQL"}
+          />
+          {importPreview.length > 0 && (
+            <ul className="space-y-1 text-sm">
+              {importPreview.map((u, i) => (
+                <li key={`${u.name}-${i}`} className="flex items-center gap-2">
+                  <Check className="size-4 text-success" /> {u.name}
+                </li>
+              ))}
+            </ul>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setImportOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={importUnits} disabled={!importPreview.length || importing}>
+              {importing && <Loader2 className="size-4 animate-spin" />} Create all units
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+type TopicTemplate = "blank" | "standard";
 
 function UnitBlock({
   unit,
@@ -300,6 +412,7 @@ function UnitBlock({
   onDelete,
   onMove,
   onAddTopic,
+  onBulkAddTopics,
   onTopicChange,
   onTopicDelete,
   onTopicDuplicate,
@@ -309,12 +422,18 @@ function UnitBlock({
   onEdit: () => void;
   onDelete: () => void;
   onMove: (dir: -1 | 1) => void;
-  onAddTopic: (title: string) => void;
+  onAddTopic: (title: string, template: TopicTemplate) => Promise<void> | void;
+  onBulkAddTopics: (titles: string[], template: TopicTemplate) => Promise<void> | void;
   onTopicChange: (id: string, values: Partial<Topic>) => void;
   onTopicDelete: (id: string) => void;
   onTopicDuplicate: (t: Topic) => void;
 }) {
   const [newTopic, setNewTopic] = useState("");
+  const [template, setTemplate] = useState<TopicTemplate>("blank");
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const bulkNames = parseTopicList(bulkText);
   const done = topics.filter((t) => t.completed).length;
   const pct = topics.length ? Math.round((done / topics.length) * 100) : 0;
 
@@ -420,11 +539,18 @@ function UnitBlock({
         ))}
       </ul>
 
+      {topics.length === 0 && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          No topics in this unit yet — add your first one below.
+        </p>
+      )}
+
       <form
-        className="mt-3 flex gap-2"
+        className="mt-3 flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          onAddTopic(newTopic);
+          if (!newTopic.trim()) return;
+          onAddTopic(newTopic, template);
           setNewTopic("");
         }}
       >
@@ -432,16 +558,66 @@ function UnitBlock({
           value={newTopic}
           onChange={(e) => setNewTopic(e.target.value)}
           placeholder="Add a topic…"
-          className="h-9"
+          className="h-9 min-w-[180px] flex-1"
         />
-        <Button type="submit" size="sm" variant="secondary">
-          <Check className="size-4" /> Add
+        <Select value={template} onValueChange={(v) => setTemplate(v as "blank" | "standard")}>
+          <SelectTrigger className="h-9 w-full sm:w-[190px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="blank">Blank topic</SelectItem>
+            <SelectItem value="standard">📋 Standard template</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button type="submit" size="sm" variant="secondary" disabled={busy}>
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Add
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => setBulkOpen(true)}>
+          <ListPlus className="size-4" /> Add multiple
         </Button>
       </form>
 
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        Difficulty options: {DIFFICULTIES.join(", ")}
-      </p>
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>📋 Add multiple topics</DialogTitle>
+            <DialogDescription>
+              Paste one topic per line. Numbering like “1.” or bullets are removed automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={10}
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            placeholder={"Introduction\nDatabase\nDBMS\nKeys"}
+          />
+          {bulkNames.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {bulkNames.length} topics will be created.
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setBulkOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!bulkNames.length || busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  await onBulkAddTopics(bulkNames, template);
+                  setBulkText("");
+                  setBulkOpen(false);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {busy && <Loader2 className="size-4 animate-spin" />} Create {bulkNames.length} topics
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
