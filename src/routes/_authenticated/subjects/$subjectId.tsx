@@ -7,13 +7,18 @@ import {
   Bookmark,
   Check,
   Copy,
+  FileStack,
+  ListPlus,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Plus,
+  Sparkles,
   Star,
   Trash2,
   TriangleAlert,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import {
   useCreate,
@@ -24,7 +29,12 @@ import {
   type Topic,
   type Unit,
 } from "@/lib/data";
-import { PRIORITIES, DIFFICULTIES } from "@/lib/topic-schema";
+import { PRIORITIES } from "@/lib/topic-schema";
+import {
+  parseTopicList,
+  parseUnitList,
+  standardTemplateContent,
+} from "@/lib/smart-paste";
 import { EmptyState, PageHeader } from "@/components/ui-kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +46,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -54,6 +65,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/subjects/$subjectId")({
   head: () => ({
