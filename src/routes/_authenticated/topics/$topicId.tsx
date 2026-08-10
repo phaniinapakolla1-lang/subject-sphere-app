@@ -282,6 +282,9 @@ function TopicEditor() {
               {g.label}
             </TabsTrigger>
           ))}
+          <TabsTrigger value="sections">
+            Sections{customKeys.length ? ` (${customKeys.length})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="resources">Resources</TabsTrigger>
         </TabsList>
 
@@ -305,10 +308,7 @@ function TopicEditor() {
                     rows={f.rows ?? 4}
                     placeholder={f.placeholder}
                     value={content[f.key] ?? ""}
-                    onChange={(e) => {
-                      setContent({ ...content, [f.key]: e.target.value });
-                      setDirty(true);
-                    }}
+                    onChange={(e) => setField(f.key, e.target.value)}
                   />
                 )}
               </div>
@@ -316,11 +316,68 @@ function TopicEditor() {
           </TabsContent>
         ))}
 
+        <TabsContent value="sections" className="space-y-4">
+          {customKeys.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No extra sections yet. Use Smart Paste or add your own section below.
+            </p>
+          )}
+          {customKeys.map((key) => (
+            <div key={key} className="panel p-4">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {titleCase(key.replace(/_/g, " "))}
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Delete section"
+                  className="text-destructive"
+                  onClick={() => {
+                    setContent((c) => {
+                      const next = { ...c };
+                      delete next[key];
+                      return next;
+                    });
+                    setDirty(true);
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+              {preview ? (
+                <div
+                  className="prose-studyos mt-2 text-sm leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(content[key] ?? "") }}
+                />
+              ) : (
+                <Textarea
+                  className="mt-2 resize-y border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                  rows={5}
+                  value={content[key] ?? ""}
+                  onChange={(e) => setField(key, e.target.value)}
+                />
+              )}
+            </div>
+          ))}
+          <Button variant="outline" size="sm" onClick={addCustomSection}>
+            <Plus className="size-4" /> Add custom section
+          </Button>
+        </TabsContent>
+
         <TabsContent value="resources">
           <ResourceManager topicId={t.id} subjectId={t.subject_id} />
         </TabsContent>
       </Tabs>
+
+      <SmartPasteDialog
+        open={smartOpen}
+        onOpenChange={setSmartOpen}
+        hasExistingContent={Object.values(content).some((v) => (v ?? "").trim())}
+        onSave={applySmartPaste}
+      />
     </div>
+
   );
 }
 
