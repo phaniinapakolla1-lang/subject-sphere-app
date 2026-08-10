@@ -62,7 +62,31 @@ function TopicEditor() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [smartOpen, setSmartOpen] = useState(false);
   const loaded = useRef(false);
+
+  const knownKeys = useMemo(() => new Set(TOPIC_FIELDS.map((f) => f.key)), []);
+  const customKeys = useMemo(
+    () => Object.keys(content).filter((k) => !knownKeys.has(k)),
+    [content, knownKeys],
+  );
+
+  function setField(key: string, value: string) {
+    setContent((c) => ({ ...c, [key]: value }));
+    setDirty(true);
+  }
+
+  function addCustomSection() {
+    const name = window.prompt("Section title (e.g. Exam Points)");
+    if (!name?.trim()) return;
+    const key = slug(name);
+    if (content[key] !== undefined) {
+      toast.info("That section already exists.");
+      return;
+    }
+    setField(key, "");
+  }
+
 
   useEffect(() => {
     if (topic.data && !loaded.current) {
