@@ -124,6 +124,16 @@ function TopicEditor() {
     toast.success(`Revision ${count} logged`);
   }
 
+  function applySmartPaste(
+    sections: Parameters<typeof applySections>[1],
+    mode: "replace" | "append",
+  ) {
+    setContent((c) => applySections(c, sections, mode));
+    setDirty(true);
+    toast.success(`${sections.length} sections added to this topic`);
+  }
+
+
   if (topic.isLoading) {
     return (
       <div className="flex justify-center py-20">
