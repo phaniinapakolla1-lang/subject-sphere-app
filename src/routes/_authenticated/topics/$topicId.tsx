@@ -161,10 +161,14 @@ function TopicEditor() {
             <span className="mr-2 text-xs text-muted-foreground">
               {saving ? "Saving…" : dirty ? "Unsaved" : "All changes saved"}
             </span>
+            <Button size="sm" onClick={() => setSmartOpen(true)}>
+              <Sparkles className="size-4" /> Paste &amp; auto-organize
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setPreview((p) => !p)}>
               {preview ? <Pencil className="size-4" /> : <Eye className="size-4" />}
               {preview ? "Edit" : "Preview"}
             </Button>
+
             <Button size="sm" onClick={revise}>
               <RefreshCw className="size-4" /> Log revision
             </Button>
