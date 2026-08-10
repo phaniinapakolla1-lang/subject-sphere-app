@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -7,13 +7,18 @@ import {
   Eye,
   Loader2,
   Pencil,
+  Plus,
   RefreshCw,
+  Sparkles,
   Star,
+  Trash2,
   TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useOne, useUpdate, type Topic } from "@/lib/data";
 import { TOPIC_FIELDS, TOPIC_GROUPS, PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
+import { applySections, slug, titleCase } from "@/lib/smart-paste";
+import { SmartPasteDialog } from "@/components/smart-paste-dialog";
 import { renderMarkdown } from "@/lib/markdown";
 import { ResourceManager } from "@/components/resource-manager";
 import { PageHeader } from "@/components/ui-kit";
@@ -31,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/topics/$topicId")({
   head: () => ({
