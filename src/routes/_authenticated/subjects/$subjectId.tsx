@@ -102,11 +102,16 @@ function SubjectDetail() {
   const [unitDialog, setUnitDialog] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [unitDraft, setUnitDraft] = useState({
+    number: "",
     name: "",
     description: "",
     estimated_hours: "",
     priority: "medium",
   });
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importing, setImporting] = useState(false);
+  const importPreview = parseUnitList(importText);
 
   const allTopics = topics.data ?? [];
   const done = allTopics.filter((t) => t.completed).length;
@@ -115,6 +120,7 @@ function SubjectDetail() {
   function openUnit(u?: Unit) {
     setEditingUnit(u ?? null);
     setUnitDraft({
+      number: "",
       name: u?.name ?? "",
       description: u?.description ?? "",
       estimated_hours: u?.estimated_hours?.toString() ?? "",
@@ -123,28 +129,56 @@ function SubjectDetail() {
     setUnitDialog(true);
   }
 
+  function composeUnitName() {
+    const name = unitDraft.name.trim();
+    const number = unitDraft.number.trim();
+    if (!number) return name;
+    const label = /^unit/i.test(number) ? number : `Unit ${number}`;
+    return name ? `${label} — ${name}` : label;
+  }
+
   async function saveUnit() {
-    if (!unitDraft.name.trim() || !user) return;
+    const finalName = composeUnitName();
+    if (!finalName || !user) {
+      toast.info("Give this unit a number or a name.");
+      return;
+    }
     const values = {
-      name: unitDraft.name.trim(),
+      name: finalName,
       description: unitDraft.description || null,
       estimated_hours: unitDraft.estimated_hours ? Number(unitDraft.estimated_hours) : 0,
       priority: unitDraft.priority,
     };
     if (editingUnit) await updateUnit.mutateAsync({ id: editingUnit.id, values });
-    else
-      await createTopicless(values);
+    else await createNewUnit(values);
     setUnitDialog(false);
   }
 
-  async function createTopicless(values: Record<string, unknown>) {
+  async function createNewUnit(values: Record<string, unknown>, offset = 0) {
     if (!user) return;
     await createUnit.mutateAsync({
       ...(values as { name: string }),
       subject_id: subjectId,
       user_id: user.id,
-      position: (units.data?.length ?? 0) + 1,
+      position: (units.data?.length ?? 0) + 1 + offset,
     });
+  }
+
+  async function importUnits() {
+    if (!user || !importPreview.length) return;
+    setImporting(true);
+    try {
+      for (let i = 0; i < importPreview.length; i += 1) {
+        await createNewUnit({ name: importPreview[i]!.name, priority: "medium" }, i);
+      }
+      toast.success(`${importPreview.length} units created`);
+      setImportText("");
+      setImportOpen(false);
+    } catch {
+      toast.error("Could not create all units. Please try again.");
+    } finally {
+      setImporting(false);
+    }
   }
 
   function moveUnit(u: Unit, dir: -1 | 1) {
@@ -157,15 +191,32 @@ function SubjectDetail() {
     updateUnit.mutate({ id: other.id, values: { position: u.position } });
   }
 
-  async function addTopic(unitId: string, title: string) {
+  async function addTopic(
+    unitId: string,
+    title: string,
+    template: TopicTemplate = "blank",
+    offset = 0,
+  ) {
     if (!user || !title.trim()) return;
     await createTopic.mutateAsync({
       title: title.trim(),
       unit_id: unitId,
       subject_id: subjectId,
       user_id: user.id,
-      position: allTopics.filter((t) => t.unit_id === unitId).length + 1,
+      content: template === "standard" ? standardTemplateContent() : {},
+      position: allTopics.filter((t) => t.unit_id === unitId).length + 1 + offset,
     });
+  }
+
+  async function bulkAddTopics(unitId: string, titles: string[], template: TopicTemplate) {
+    try {
+      for (let i = 0; i < titles.length; i += 1) {
+        await addTopic(unitId, titles[i]!, template, i);
+      }
+      toast.success(`${titles.length} topics created`);
+    } catch {
+      toast.error("Could not create all topics. Please try again.");
+    }
   }
 
   async function duplicateTopic(t: Topic) {
@@ -182,6 +233,7 @@ function SubjectDetail() {
       position: t.position + 1,
     });
   }
+
 
   return (
     <div className="animate-rise">
