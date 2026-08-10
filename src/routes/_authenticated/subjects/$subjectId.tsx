@@ -304,24 +304,39 @@ function SubjectDetail() {
             <DialogTitle>{editingUnit ? "Edit unit" : "New unit"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
+            {!editingUnit && (
+              <div className="space-y-2">
+                <Label>Unit number</Label>
+                <Input
+                  autoFocus
+                  value={unitDraft.number}
+                  onChange={(e) => setUnitDraft({ ...unitDraft, number: e.target.value })}
+                  placeholder="1"
+                />
+              </div>
+            )}
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{editingUnit ? "Name" : "Unit name"}</Label>
               <Input
                 value={unitDraft.name}
                 onChange={(e) => setUnitDraft({ ...unitDraft, name: e.target.value })}
-                placeholder="Unit 1 — Process Management"
+                placeholder={editingUnit ? "Unit 1 — Process Management" : "Introduction to DBMS"}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveUnit();
+                }}
               />
             </div>
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>Description (optional)</Label>
               <Textarea
-                rows={3}
+                rows={2}
                 value={unitDraft.description}
                 onChange={(e) =>
                   setUnitDraft({ ...unitDraft, description: e.target.value })
                 }
               />
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Estimated hours</Label>
