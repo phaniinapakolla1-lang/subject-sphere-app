@@ -16,7 +16,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useOne, useUpdate, type Topic } from "@/lib/data";
-import { TOPIC_FIELDS, TOPIC_GROUPS, PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
+import {
+  TOPIC_FIELDS,
+  TOPIC_GROUPS,
+  PRIORITIES,
+  DIFFICULTIES,
+  nextRevisionDate,
+} from "@/lib/topic-schema";
 import { applySections, slug, titleCase } from "@/lib/smart-paste";
 import { SmartPasteDialog } from "@/components/smart-paste-dialog";
 import { renderMarkdown } from "@/lib/markdown";
@@ -36,7 +42,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-
 
 export const Route = createFileRoute("/_authenticated/topics/$topicId")({
   head: () => ({
@@ -87,7 +92,6 @@ function TopicEditor() {
     setField(key, "");
   }
 
-
   useEffect(() => {
     if (topic.data && !loaded.current) {
       loaded.current = true;
@@ -132,7 +136,6 @@ function TopicEditor() {
     setDirty(true);
     toast.success(`${sections.length} sections added to this topic`);
   }
-
 
   if (topic.isLoading) {
     return (
@@ -377,7 +380,6 @@ function TopicEditor() {
         onSave={applySmartPaste}
       />
     </div>
-
   );
 }
 

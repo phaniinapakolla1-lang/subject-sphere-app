@@ -17,37 +17,238 @@ export type Category = {
  * (see topic-schema.ts) so nothing new is needed in the database.
  */
 export const CATEGORIES: Category[] = [
-  { key: "definition", label: "Definition", emoji: "📖", field: "definition", synonyms: ["definition", "define", "what is", "meaning", "defined as"] },
-  { key: "introduction", label: "Introduction", emoji: "🧭", field: "introduction", synonyms: ["introduction", "intro", "overview", "background"] },
-  { key: "explanation", label: "Explanation", emoji: "💬", field: "explanation", synonyms: ["explanation", "description", "detail", "details", "elaboration"] },
-  { key: "key_points", label: "Key Points", emoji: "🔑", field: "important_points", synonyms: ["key points", "important points", "highlights", "main points", "salient points", "remember"] },
-  { key: "features", label: "Features", emoji: "⭐", field: "features", synonyms: ["features", "characteristics", "properties", "attributes"] },
-  { key: "types", label: "Types", emoji: "🗂", field: "types", synonyms: ["types", "kinds", "classification", "categories", "variants"] },
-  { key: "components", label: "Components", emoji: "🧩", field: "components", synonyms: ["components", "elements", "parts", "modules"] },
-  { key: "advantages", label: "Advantages", emoji: "✅", field: "advantages", synonyms: ["advantages", "benefits", "merits", "pros", "strengths", "positives"] },
-  { key: "disadvantages", label: "Disadvantages", emoji: "❌", field: "disadvantages", synonyms: ["disadvantages", "limitations", "demerits", "cons", "drawbacks", "weaknesses", "challenges"] },
-  { key: "applications", label: "Applications", emoji: "💡", field: "applications", synonyms: ["applications", "uses", "use cases", "usage", "where used", "real life"] },
-  { key: "examples", label: "Examples", emoji: "🧪", field: "examples", synonyms: ["examples", "example", "illustration", "sample", "for instance"] },
-  { key: "importance", label: "Importance", emoji: "❗", field: "importance", synonyms: ["importance", "significance", "need", "why", "objectives", "goals", "purpose"] },
-  { key: "principles", label: "Principles", emoji: "📐", field: "principles", synonyms: ["principles", "rules", "laws", "axioms"] },
-  { key: "functions", label: "Functions", emoji: "⚙️", field: "functions", synonyms: ["functions", "roles", "responsibilities", "services"] },
-  { key: "working", label: "Working", emoji: "🔧", field: "working", synonyms: ["working", "how it works", "operation", "mechanism"] },
-  { key: "process", label: "Process / Steps", emoji: "🪜", field: "process", synonyms: ["process", "steps", "procedure", "methodology", "phases", "stages"] },
-  { key: "algorithm", label: "Algorithm", emoji: "🧮", field: "algorithm", synonyms: ["algorithm", "pseudocode", "pseudo code"] },
-  { key: "architecture", label: "Architecture", emoji: "🏛", field: "architecture", synonyms: ["architecture", "structure", "design", "layers"] },
-  { key: "diagram", label: "Diagram", emoji: "🖼", field: "diagram", synonyms: ["diagram", "figure", "flowchart", "block diagram"] },
-  { key: "comparison", label: "Difference / Comparison", emoji: "⚖️", field: "comparison", synonyms: ["difference", "differences", "comparison", "compare", "vs", "versus", "distinguish"] },
-  { key: "formula", label: "Formula", emoji: "∑", field: "formula", synonyms: ["formula", "formulae", "equation", "equations"] },
-  { key: "syntax", label: "Syntax", emoji: "⌨️", field: "syntax", synonyms: ["syntax", "code", "command", "query format"] },
-  { key: "conclusion", label: "Conclusion", emoji: "🏁", field: "conclusion", synonyms: ["conclusion", "summary", "in summary", "to conclude", "recap"] },
-  { key: "notes", label: "Notes", emoji: "📝", field: "personal_notes", synonyms: ["notes", "extra notes", "teacher notes", "remarks"] },
-  { key: "references", label: "References", emoji: "🔗", field: "references", synonyms: ["references", "bibliography", "sources", "further reading"] },
-  { key: "mcqs", label: "MCQs", emoji: "❓", field: "mcqs", synonyms: ["mcq", "mcqs", "multiple choice", "objective questions"] },
-  { key: "previous_questions", label: "Previous Questions", emoji: "📜", field: "previous_questions", synonyms: ["previous questions", "past papers", "previously asked", "pyq"] },
-  { key: "answer_2", label: "2 Marks Answer", emoji: "2️⃣", field: "answer_2", synonyms: ["2 marks", "two marks", "short answer"] },
-  { key: "answer_5", label: "5 Marks Answer", emoji: "5️⃣", field: "answer_5", synonyms: ["5 marks", "five marks"] },
-  { key: "answer_10", label: "10 Marks Answer", emoji: "🔟", field: "answer_10", synonyms: ["10 marks", "ten marks", "long answer", "essay"] },
-  { key: "uncategorized", label: "Uncategorized", emoji: "⚠️", field: "uncategorized", synonyms: [] },
+  {
+    key: "definition",
+    label: "Definition",
+    emoji: "📖",
+    field: "definition",
+    synonyms: ["definition", "define", "what is", "meaning", "defined as"],
+  },
+  {
+    key: "introduction",
+    label: "Introduction",
+    emoji: "🧭",
+    field: "introduction",
+    synonyms: ["introduction", "intro", "overview", "background"],
+  },
+  {
+    key: "explanation",
+    label: "Explanation",
+    emoji: "💬",
+    field: "explanation",
+    synonyms: ["explanation", "description", "detail", "details", "elaboration"],
+  },
+  {
+    key: "key_points",
+    label: "Key Points",
+    emoji: "🔑",
+    field: "important_points",
+    synonyms: [
+      "key points",
+      "important points",
+      "highlights",
+      "main points",
+      "salient points",
+      "remember",
+    ],
+  },
+  {
+    key: "features",
+    label: "Features",
+    emoji: "⭐",
+    field: "features",
+    synonyms: ["features", "characteristics", "properties", "attributes"],
+  },
+  {
+    key: "types",
+    label: "Types",
+    emoji: "🗂",
+    field: "types",
+    synonyms: ["types", "kinds", "classification", "categories", "variants"],
+  },
+  {
+    key: "components",
+    label: "Components",
+    emoji: "🧩",
+    field: "components",
+    synonyms: ["components", "elements", "parts", "modules"],
+  },
+  {
+    key: "advantages",
+    label: "Advantages",
+    emoji: "✅",
+    field: "advantages",
+    synonyms: ["advantages", "benefits", "merits", "pros", "strengths", "positives"],
+  },
+  {
+    key: "disadvantages",
+    label: "Disadvantages",
+    emoji: "❌",
+    field: "disadvantages",
+    synonyms: [
+      "disadvantages",
+      "limitations",
+      "demerits",
+      "cons",
+      "drawbacks",
+      "weaknesses",
+      "challenges",
+    ],
+  },
+  {
+    key: "applications",
+    label: "Applications",
+    emoji: "💡",
+    field: "applications",
+    synonyms: ["applications", "uses", "use cases", "usage", "where used", "real life"],
+  },
+  {
+    key: "examples",
+    label: "Examples",
+    emoji: "🧪",
+    field: "examples",
+    synonyms: ["examples", "example", "illustration", "sample", "for instance"],
+  },
+  {
+    key: "importance",
+    label: "Importance",
+    emoji: "❗",
+    field: "importance",
+    synonyms: ["importance", "significance", "need", "why", "objectives", "goals", "purpose"],
+  },
+  {
+    key: "principles",
+    label: "Principles",
+    emoji: "📐",
+    field: "principles",
+    synonyms: ["principles", "rules", "laws", "axioms"],
+  },
+  {
+    key: "functions",
+    label: "Functions",
+    emoji: "⚙️",
+    field: "functions",
+    synonyms: ["functions", "roles", "responsibilities", "services"],
+  },
+  {
+    key: "working",
+    label: "Working",
+    emoji: "🔧",
+    field: "working",
+    synonyms: ["working", "how it works", "operation", "mechanism"],
+  },
+  {
+    key: "process",
+    label: "Process / Steps",
+    emoji: "🪜",
+    field: "process",
+    synonyms: ["process", "steps", "procedure", "methodology", "phases", "stages"],
+  },
+  {
+    key: "algorithm",
+    label: "Algorithm",
+    emoji: "🧮",
+    field: "algorithm",
+    synonyms: ["algorithm", "pseudocode", "pseudo code"],
+  },
+  {
+    key: "architecture",
+    label: "Architecture",
+    emoji: "🏛",
+    field: "architecture",
+    synonyms: ["architecture", "structure", "design", "layers"],
+  },
+  {
+    key: "diagram",
+    label: "Diagram",
+    emoji: "🖼",
+    field: "diagram",
+    synonyms: ["diagram", "figure", "flowchart", "block diagram"],
+  },
+  {
+    key: "comparison",
+    label: "Difference / Comparison",
+    emoji: "⚖️",
+    field: "comparison",
+    synonyms: ["difference", "differences", "comparison", "compare", "vs", "versus", "distinguish"],
+  },
+  {
+    key: "formula",
+    label: "Formula",
+    emoji: "∑",
+    field: "formula",
+    synonyms: ["formula", "formulae", "equation", "equations"],
+  },
+  {
+    key: "syntax",
+    label: "Syntax",
+    emoji: "⌨️",
+    field: "syntax",
+    synonyms: ["syntax", "code", "command", "query format"],
+  },
+  {
+    key: "conclusion",
+    label: "Conclusion",
+    emoji: "🏁",
+    field: "conclusion",
+    synonyms: ["conclusion", "summary", "in summary", "to conclude", "recap"],
+  },
+  {
+    key: "notes",
+    label: "Notes",
+    emoji: "📝",
+    field: "personal_notes",
+    synonyms: ["notes", "extra notes", "teacher notes", "remarks"],
+  },
+  {
+    key: "references",
+    label: "References",
+    emoji: "🔗",
+    field: "references",
+    synonyms: ["references", "bibliography", "sources", "further reading"],
+  },
+  {
+    key: "mcqs",
+    label: "MCQs",
+    emoji: "❓",
+    field: "mcqs",
+    synonyms: ["mcq", "mcqs", "multiple choice", "objective questions"],
+  },
+  {
+    key: "previous_questions",
+    label: "Previous Questions",
+    emoji: "📜",
+    field: "previous_questions",
+    synonyms: ["previous questions", "past papers", "previously asked", "pyq"],
+  },
+  {
+    key: "answer_2",
+    label: "2 Marks Answer",
+    emoji: "2️⃣",
+    field: "answer_2",
+    synonyms: ["2 marks", "two marks", "short answer"],
+  },
+  {
+    key: "answer_5",
+    label: "5 Marks Answer",
+    emoji: "5️⃣",
+    field: "answer_5",
+    synonyms: ["5 marks", "five marks"],
+  },
+  {
+    key: "answer_10",
+    label: "10 Marks Answer",
+    emoji: "🔟",
+    field: "answer_10",
+    synonyms: ["10 marks", "ten marks", "long answer", "essay"],
+  },
+  {
+    key: "uncategorized",
+    label: "Uncategorized",
+    emoji: "⚠️",
+    field: "uncategorized",
+    synonyms: [],
+  },
 ];
 
 export const CATEGORY_BY_KEY = new Map(CATEGORIES.map((c) => [c.key, c]));
@@ -176,12 +377,26 @@ function classifyBody(body: string): { key: string; confidence: number } {
   const t = body.toLowerCase();
   const has = (...words: string[]) => words.some((w) => t.includes(w));
 
-  if (/\b(is|are)\s+(a|an|the)\b.*\b(process|method|technique|system|concept|term|way)\b/.test(t) ||
-      has("is defined as", "refers to", "can be defined", "is known as"))
+  if (
+    /\b(is|are)\s+(a|an|the)\b.*\b(process|method|technique|system|concept|term|way)\b/.test(t) ||
+    has("is defined as", "refers to", "can be defined", "is known as")
+  )
     return { key: "definition", confidence: 0.72 };
-  if (has("advantage", "benefit", "improves", "reduces redundancy", "helps in", "easier to", "merit"))
+  if (
+    has("advantage", "benefit", "improves", "reduces redundancy", "helps in", "easier to", "merit")
+  )
     return { key: "advantages", confidence: 0.6 };
-  if (has("disadvantage", "limitation", "drawback", "however", "may require", "increases complexity", "difficult to"))
+  if (
+    has(
+      "disadvantage",
+      "limitation",
+      "drawback",
+      "however",
+      "may require",
+      "increases complexity",
+      "difficult to",
+    )
+  )
     return { key: "disadvantages", confidence: 0.6 };
   if (has("for example", "e.g.", "such as ", "consider the"))
     return { key: "examples", confidence: 0.55 };

@@ -7,7 +7,9 @@ type AiSection = { type: string; title: string; content: string; confidence: num
 
 export const organizePastedText = createServerFn({ method: "POST" })
   .inputValidator((input: { text: string; enhance?: boolean }) => {
-    const text = String(input?.text ?? "").slice(0, MAX_INPUT).trim();
+    const text = String(input?.text ?? "")
+      .slice(0, MAX_INPUT)
+      .trim();
     if (!text) throw new Error("Paste some text first.");
     return { text, enhance: Boolean(input?.enhance) };
   })
@@ -74,11 +76,16 @@ export const organizePastedText = createServerFn({ method: "POST" })
         ? (rec["content"] as unknown[]).map((l) => `- ${String(l).trim()}`).join("\n")
         : String(rec["content"] ?? "").trim();
       if (!content) continue;
-      const type = String(rec["type"] ?? "").toLowerCase().trim();
+      const type = String(rec["type"] ?? "")
+        .toLowerCase()
+        .trim();
       const confidence = Number(rec["confidence"]);
       sections.push({
         type: validKeys.has(type) ? type : "uncategorized",
-        title: String(rec["title"] ?? "").trim().slice(0, 80) || "Section",
+        title:
+          String(rec["title"] ?? "")
+            .trim()
+            .slice(0, 80) || "Section",
         content: content.slice(0, 20000),
         confidence: Number.isFinite(confidence) ? Math.min(1, Math.max(0, confidence)) : 0.5,
       });

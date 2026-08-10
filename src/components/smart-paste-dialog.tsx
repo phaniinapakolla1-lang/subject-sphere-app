@@ -122,7 +122,9 @@ export function SmartPasteDialog({
         setStep("preview");
         toast.info("Organized offline — AI was unavailable, please review the sections.");
       } else {
-        setError(e instanceof Error ? e.message : "Something went wrong while organizing this content.");
+        setError(
+          e instanceof Error ? e.message : "Something went wrong while organizing this content.",
+        );
         setStep("error");
       }
     } finally {
@@ -183,11 +185,7 @@ export function SmartPasteDialog({
         return list;
       }
       const next = [...list];
-      next.splice(
-        i,
-        1,
-        ...parts.map((p) => ({ ...cur, id: newSectionId(), content: p.trim() })),
-      );
+      next.splice(i, 1, ...parts.map((p) => ({ ...cur, id: newSectionId(), content: p.trim() })));
       return next;
     });
   }
@@ -396,12 +394,7 @@ function SectionCard({
 }) {
   const uncategorized = section.category === "uncategorized";
   return (
-    <div
-      className={cn(
-        "panel space-y-3 p-4",
-        uncategorized && "border-warning/40 bg-warning/5",
-      )}
-    >
+    <div className={cn("panel space-y-3 p-4", uncategorized && "border-warning/40 bg-warning/5")}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-base">{categoryEmoji(section.category)}</span>
         <Input

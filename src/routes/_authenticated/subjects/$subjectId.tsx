@@ -30,11 +30,7 @@ import {
   type Unit,
 } from "@/lib/data";
 import { PRIORITIES } from "@/lib/topic-schema";
-import {
-  parseTopicList,
-  parseUnitList,
-  standardTemplateContent,
-} from "@/lib/smart-paste";
+import { parseTopicList, parseUnitList, standardTemplateContent } from "@/lib/smart-paste";
 import { EmptyState, PageHeader } from "@/components/ui-kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,7 +61,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-
 
 export const Route = createFileRoute("/_authenticated/subjects/$subjectId")({
   head: () => ({
@@ -234,7 +229,6 @@ function SubjectDetail() {
     });
   }
 
-
   return (
     <div className="animate-rise">
       <Link
@@ -257,7 +251,6 @@ function SubjectDetail() {
             </Button>
           </>
         }
-
       />
 
       <div className="panel mb-6 p-5">
@@ -331,9 +324,7 @@ function SubjectDetail() {
               <Textarea
                 rows={2}
                 value={unitDraft.description}
-                onChange={(e) =>
-                  setUnitDraft({ ...unitDraft, description: e.target.value })
-                }
+                onChange={(e) => setUnitDraft({ ...unitDraft, description: e.target.value })}
               />
             </div>
 
@@ -343,9 +334,7 @@ function SubjectDetail() {
                 <Input
                   type="number"
                   value={unitDraft.estimated_hours}
-                  onChange={(e) =>
-                    setUnitDraft({ ...unitDraft, estimated_hours: e.target.value })
-                  }
+                  onChange={(e) => setUnitDraft({ ...unitDraft, estimated_hours: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -411,7 +400,6 @@ function SubjectDetail() {
         </DialogContent>
       </Dialog>
     </div>
-
   );
 }
 
@@ -448,7 +436,6 @@ function UnitBlock({
   const bulkNames = parseTopicList(bulkText);
   const done = topics.filter((t) => t.completed).length;
   const pct = topics.length ? Math.round((done / topics.length) * 100) : 0;
-
 
   return (
     <section className="panel p-5">
@@ -634,4 +621,3 @@ function UnitBlock({
     </section>
   );
 }
-
