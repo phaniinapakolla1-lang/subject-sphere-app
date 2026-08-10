@@ -305,6 +305,8 @@ function SubjectDetail() {
   );
 }
 
+type TopicTemplate = "blank" | "standard";
+
 function UnitBlock({
   unit,
   topics,
@@ -312,6 +314,7 @@ function UnitBlock({
   onDelete,
   onMove,
   onAddTopic,
+  onBulkAddTopics,
   onTopicChange,
   onTopicDelete,
   onTopicDuplicate,
@@ -321,14 +324,21 @@ function UnitBlock({
   onEdit: () => void;
   onDelete: () => void;
   onMove: (dir: -1 | 1) => void;
-  onAddTopic: (title: string) => void;
+  onAddTopic: (title: string, template: TopicTemplate) => Promise<void> | void;
+  onBulkAddTopics: (titles: string[], template: TopicTemplate) => Promise<void> | void;
   onTopicChange: (id: string, values: Partial<Topic>) => void;
   onTopicDelete: (id: string) => void;
   onTopicDuplicate: (t: Topic) => void;
 }) {
   const [newTopic, setNewTopic] = useState("");
+  const [template, setTemplate] = useState<TopicTemplate>("blank");
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const bulkNames = parseTopicList(bulkText);
   const done = topics.filter((t) => t.completed).length;
   const pct = topics.length ? Math.round((done / topics.length) * 100) : 0;
+
 
   return (
     <section className="panel p-5">
