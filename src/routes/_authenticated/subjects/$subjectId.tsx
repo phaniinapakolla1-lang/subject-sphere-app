@@ -376,7 +376,42 @@ function SubjectDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📚 Import units</DialogTitle>
+            <DialogDescription>
+              Paste one unit per line — unit numbers and titles are detected automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={8}
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder={"Unit 1 - Introduction\nUnit 2 - Database Models\nUnit 3 - SQL"}
+          />
+          {importPreview.length > 0 && (
+            <ul className="space-y-1 text-sm">
+              {importPreview.map((u, i) => (
+                <li key={`${u.name}-${i}`} className="flex items-center gap-2">
+                  <Check className="size-4 text-success" /> {u.name}
+                </li>
+              ))}
+            </ul>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setImportOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={importUnits} disabled={!importPreview.length || importing}>
+              {importing && <Loader2 className="size-4 animate-spin" />} Create all units
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }
 
