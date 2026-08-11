@@ -124,6 +124,7 @@ function build(): Store {
   const subjects: any[] = [];
   const units: any[] = [];
   const topics: any[] = [];
+  const topic_blocks: any[] = [];
   let si = 0;
   let ui = 0;
   let ti = 0;
@@ -144,6 +145,17 @@ function build(): Store {
       favorite: si <= 2,
       archived: false,
       position: si,
+      slug: s.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      category: "Computer Science",
+      level: "intermediate",
+      thumbnail_url: null,
+      duration: "8 weeks",
+      academic_year: "2025-26",
+      status: "published",
+      visibility: "students",
+      is_course: true,
+      learning_outcomes: [],
+      published_at: iso(-40),
       created_at: iso(-60),
       updated_at: iso(-2),
     });
@@ -184,6 +196,25 @@ function build(): Store {
           position: topicIdx,
           created_at: iso(-50),
           updated_at: iso(-1),
+        });
+        const tid = uid("top", ti);
+        Object.entries(sampleContent(title)).forEach(([key, value], bi) => {
+          topic_blocks.push({
+            id: `${tid}-blk-${bi}`,
+            user_id: u,
+            topic_id: tid,
+            subject_id: sid,
+            type: /^-|\n-/.test(value as string) ? "list" : "text",
+            title: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+            body: value as string,
+            caption: null,
+            url: null,
+            storage_path: null,
+            meta: {},
+            position: bi,
+            created_at: iso(-50),
+            updated_at: iso(-1),
+          });
         });
       });
     });
@@ -334,6 +365,9 @@ function build(): Store {
     subjects,
     units,
     topics,
+    topic_blocks,
+    course_access: [],
+    course_progress: [],
     notes,
     flashcards,
     assignments,
