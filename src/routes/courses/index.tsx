@@ -38,7 +38,9 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 function CatalogPage() {
-  const { courses } = Route.useLoaderData();
+  const { courses } = Route.useLoaderData() as {
+    courses: Record<string, string | number | null>[];
+  };
 
   return (
     <Shell>

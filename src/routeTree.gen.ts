@@ -27,6 +27,7 @@ import { Route as AuthenticatedRevisionRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as CoursesIndexRouteImport } from './routes/courses/index'
+import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin/dashboard'
 import { Route as AdminAdminStudentsRouteImport } from './routes/_admin/admin/students'
 import { Route as AuthenticatedSubjectsIndexRouteImport } from './routes/_authenticated/subjects/index'
@@ -122,6 +123,11 @@ const CoursesIndexRoute = CoursesIndexRouteImport.update({
   path: '/courses/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoursesSlugRoute = CoursesSlugRouteImport.update({
+  id: '/courses/$slug',
+  path: '/courses/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   id: '/admin/dashboard',
   path: '/admin/dashboard',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/revision': typeof AuthenticatedRevisionRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/courses/': typeof CoursesIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/students': typeof AdminAdminStudentsRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/revision': typeof AuthenticatedRevisionRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/courses': typeof CoursesIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/students': typeof AdminAdminStudentsRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/_authenticated/revision': typeof AuthenticatedRevisionRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/courses/': typeof CoursesIndexRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_admin/admin/students': typeof AdminAdminStudentsRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/revision'
     | '/settings'
     | '/timer'
+    | '/courses/$slug'
     | '/courses/'
     | '/admin/dashboard'
     | '/admin/students'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/revision'
     | '/settings'
     | '/timer'
+    | '/courses/$slug'
     | '/courses'
     | '/admin/dashboard'
     | '/admin/students'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/_authenticated/revision'
     | '/_authenticated/settings'
     | '/_authenticated/timer'
+    | '/courses/$slug'
     | '/courses/'
     | '/_admin/admin/dashboard'
     | '/_admin/admin/students'
@@ -305,6 +317,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   StudentLoginRoute: typeof StudentLoginRoute
+  CoursesSlugRoute: typeof CoursesSlugRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
 }
 
@@ -436,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/courses/$slug': {
+      id: '/courses/$slug'
+      path: '/courses/$slug'
+      fullPath: '/courses/$slug'
+      preLoaderRoute: typeof CoursesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_admin/admin/dashboard': {
       id: '/_admin/admin/dashboard'
       path: '/admin/dashboard'
@@ -531,6 +551,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   StudentLoginRoute: StudentLoginRoute,
+  CoursesSlugRoute: CoursesSlugRoute,
   CoursesIndexRoute: CoursesIndexRoute,
 }
 export const routeTree = rootRouteImport
