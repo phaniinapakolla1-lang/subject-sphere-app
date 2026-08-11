@@ -160,26 +160,25 @@ function TopicEditor() {
 
   return (
     <div className="animate-rise">
+      <Link
+        to="/subjects/$subjectId"
+        params={{ subjectId: t.subject_id }}
+        className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-3.5" /> Back to course
+      </Link>
+      <Input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onBlur={() => title.trim() && title !== t.title && patch({ title: title.trim() })}
+        className="mb-4 h-auto border-none bg-transparent px-0 text-2xl font-semibold tracking-tight focus-visible:ring-0"
+        aria-label="Topic title"
+      />
       <PageHeader
-        title={
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => title.trim() && title !== t.title && patch({ title: title.trim() })}
-            className="h-auto border-none bg-transparent px-0 text-2xl font-semibold tracking-tight focus-visible:ring-0"
-            aria-label="Topic title"
-          />
-        }
-        subtitle={
-          <Link
-            to="/subjects/$subjectId"
-            params={{ subjectId: t.subject_id }}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-3.5" /> Back to course
-          </Link>
-        }
+        title="Topic content"
+        subtitle="Build this topic from flexible content blocks."
         actions={
+
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setSmartOpen(true)}>
               <Sparkles className="size-4" /> Paste &amp; auto-organize
