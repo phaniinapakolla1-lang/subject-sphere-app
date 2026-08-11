@@ -57,8 +57,27 @@ function Shell({ children }: { children: React.ReactNode }) {
   return <main className="mx-auto max-w-4xl px-4 py-16 sm:px-6">{children}</main>;
 }
 
+type CourseDetail = {
+  id: string;
+  name: string;
+  code: string | null;
+  description: string | null;
+  category: string | null;
+  level: string;
+  duration: string | null;
+  academic_year: string | null;
+  thumbnail_url: string | null;
+  learning_outcomes: string[];
+};
+type UnitRow = { id: string; name: string; description: string | null; position: number };
+type TopicRow = { id: string; title: string; unit_id: string; position: number };
+
 function CoursePage() {
-  const { course, units, topics } = Route.useLoaderData();
+  const { course, units, topics } = Route.useLoaderData() as {
+    course: CourseDetail | null;
+    units: UnitRow[];
+    topics: TopicRow[];
+  };
   if (!course) return null;
 
   return (

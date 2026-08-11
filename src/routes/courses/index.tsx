@@ -37,10 +37,20 @@ function Shell({ children }: { children: React.ReactNode }) {
   return <main className="mx-auto max-w-5xl px-4 py-16 sm:px-6">{children}</main>;
 }
 
+type CatalogCourse = {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  category: string | null;
+  level: string;
+  color: string;
+  duration: string | null;
+  credits: number | null;
+};
+
 function CatalogPage() {
-  const { courses } = Route.useLoaderData() as {
-    courses: Record<string, string | number | null>[];
-  };
+  const { courses } = Route.useLoaderData() as { courses: CatalogCourse[] };
 
   return (
     <Shell>
