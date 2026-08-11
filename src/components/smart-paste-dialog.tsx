@@ -261,7 +261,9 @@ export function SmartPasteDialog({
               </Button>
             </div>
             <Textarea
+              ref={textareaRef}
               autoFocus
+
               rows={14}
               value={text}
               onChange={(e) => setText(e.target.value)}
