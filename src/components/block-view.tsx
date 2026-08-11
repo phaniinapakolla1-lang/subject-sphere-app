@@ -32,8 +32,7 @@ function embedUrl(raw: string) {
     if (u.hostname.includes("youtube.com") && u.searchParams.get("v"))
       return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
     if (u.hostname === "youtu.be") return `https://www.youtube.com/embed${u.pathname}`;
-    if (u.hostname.includes("vimeo.com"))
-      return `https://player.vimeo.com/video${u.pathname}`;
+    if (u.hostname.includes("vimeo.com")) return `https://player.vimeo.com/video${u.pathname}`;
     return null;
   } catch {
     return null;
@@ -86,8 +85,9 @@ export function BlockView({ block }: { block: TopicBlock }) {
         </figure>
       )}
 
-      {block.type === "video" && block.url && (
-        embedUrl(block.url) ? (
+      {block.type === "video" &&
+        block.url &&
+        (embedUrl(block.url) ? (
           <div className="aspect-video w-full overflow-hidden rounded-lg border border-border">
             <iframe
               src={embedUrl(block.url) as string}
@@ -97,11 +97,15 @@ export function BlockView({ block }: { block: TopicBlock }) {
             />
           </div>
         ) : (
-          <a href={block.url} target="_blank" rel="noreferrer" className="text-sm text-primary underline">
+          <a
+            href={block.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-primary underline"
+          >
             {block.url}
           </a>
-        )
-      )}
+        ))}
 
       {(block.type === "link" || block.type === "file") && (media || block.url) && (
         <a
@@ -110,7 +114,11 @@ export function BlockView({ block }: { block: TopicBlock }) {
           rel="noreferrer"
           className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
         >
-          {block.type === "file" ? <FileText className="size-4" /> : <ExternalLink className="size-4" />}
+          {block.type === "file" ? (
+            <FileText className="size-4" />
+          ) : (
+            <ExternalLink className="size-4" />
+          )}
           {block.caption || block.url || "Open attachment"}
         </a>
       )}

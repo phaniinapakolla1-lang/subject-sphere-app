@@ -15,7 +15,10 @@ export const Route = createFileRoute("/courses/")({
           "Browse published courses on Subject Sphere: units, topics and structured study material built by your faculty.",
       },
       { property: "og:title", content: "Course catalog — Subject Sphere" },
-      { property: "og:description", content: "Published courses with full unit and topic breakdowns." },
+      {
+        property: "og:description",
+        content: "Published courses with full unit and topic breakdowns.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

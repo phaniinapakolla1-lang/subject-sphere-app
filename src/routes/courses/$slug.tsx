@@ -13,10 +13,16 @@ export const Route = createFileRoute("/courses/$slug")({
   head: ({ loaderData }) => {
     if (!loaderData?.course)
       return {
-        meta: [{ title: "Course unavailable — Subject Sphere" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Course unavailable — Subject Sphere" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     const c = loaderData.course;
-    const description = (c.description ?? `${c.name} course outline on Subject Sphere.`).slice(0, 155);
+    const description = (c.description ?? `${c.name} course outline on Subject Sphere.`).slice(
+      0,
+      155,
+    );
     return {
       meta: [
         { title: `${c.name} — Subject Sphere` },

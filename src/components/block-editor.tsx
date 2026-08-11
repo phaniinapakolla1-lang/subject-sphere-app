@@ -14,7 +14,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCreate, useList, useRemove, useUpdate } from "@/lib/data";
 import { isDemo } from "@/lib/demo";
-import { BLOCK_TYPES, STANDARD_BLOCKS, blockDef, type BlockKind, type TopicBlock } from "@/lib/blocks";
+import {
+  BLOCK_TYPES,
+  STANDARD_BLOCKS,
+  blockDef,
+  type BlockKind,
+  type TopicBlock,
+} from "@/lib/blocks";
 import { BlockView } from "@/components/block-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,10 +237,22 @@ function BlockCard({
         <span className="ml-auto text-[11px] uppercase tracking-wide text-muted-foreground">
           {def.label}
         </span>
-        <Button variant="ghost" size="icon" aria-label="Move up" disabled={first} onClick={() => onMove(-1)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Move up"
+          disabled={first}
+          onClick={() => onMove(-1)}
+        >
           <ArrowUp className="size-4" />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Move down" disabled={last} onClick={() => onMove(1)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Move down"
+          disabled={last}
+          onClick={() => onMove(1)}
+        >
           <ArrowDown className="size-4" />
         </Button>
         <Button variant="ghost" size="icon" aria-label="Duplicate block" onClick={onDuplicate}>
@@ -295,7 +313,11 @@ function BlockCard({
                 disabled={uploading}
                 onClick={() => fileInput.current?.click()}
               >
-                {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
+                {uploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ImagePlus className="size-4" />
+                )}
                 {block.storage_path ? "Replace upload" : "Upload"}
               </Button>
               {block.storage_path && (

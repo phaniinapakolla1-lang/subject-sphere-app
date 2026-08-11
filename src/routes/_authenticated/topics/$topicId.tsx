@@ -39,7 +39,10 @@ export const Route = createFileRoute("/_authenticated/topics/$topicId")({
       { title: "Topic editor — Subject Sphere" },
       { name: "description", content: "Build topic content from flexible blocks." },
       { property: "og:title", content: "Topic editor — Subject Sphere" },
-      { property: "og:description", content: "Text, images, tables, code, formulas and questions." },
+      {
+        property: "og:description",
+        content: "Text, images, tables, code, formulas and questions.",
+      },
     ],
   }),
   component: TopicEditor,
@@ -70,9 +73,7 @@ function TopicEditor() {
 
   const t = topic.data;
   const legacy = (t?.content ?? {}) as Record<string, unknown>;
-  const legacyEntries = Object.entries(legacy).filter(
-    ([, v]) => typeof v === "string" && v.trim(),
-  );
+  const legacyEntries = Object.entries(legacy).filter(([, v]) => typeof v === "string" && v.trim());
   const blockCount = blocks.data?.length ?? 0;
 
   function patch(values: Record<string, unknown>) {
@@ -178,7 +179,6 @@ function TopicEditor() {
         title="Topic content"
         subtitle="Build this topic from flexible content blocks."
         actions={
-
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setSmartOpen(true)}>
               <Sparkles className="size-4" /> Paste &amp; auto-organize
@@ -197,12 +197,25 @@ function TopicEditor() {
       />
 
       <div className="mb-5 flex flex-wrap items-center gap-2">
-        <Toggle active={!!t.favorite} onClick={() => patch({ favorite: !t.favorite })} icon={<Star className="size-3.5" />} label="Favorite" />
-        <Toggle active={!!t.bookmarked} onClick={() => patch({ bookmarked: !t.bookmarked })} icon={<Bookmark className="size-3.5" />} label="Bookmark" />
-        <Toggle active={!!t.weak} onClick={() => patch({ weak: !t.weak })} icon={<TriangleAlert className="size-3.5" />} label="Weak area" />
-        {t.revision_count > 0 && (
-          <Badge variant="secondary">{t.revision_count} revisions</Badge>
-        )}
+        <Toggle
+          active={!!t.favorite}
+          onClick={() => patch({ favorite: !t.favorite })}
+          icon={<Star className="size-3.5" />}
+          label="Favorite"
+        />
+        <Toggle
+          active={!!t.bookmarked}
+          onClick={() => patch({ bookmarked: !t.bookmarked })}
+          icon={<Bookmark className="size-3.5" />}
+          label="Bookmark"
+        />
+        <Toggle
+          active={!!t.weak}
+          onClick={() => patch({ weak: !t.weak })}
+          icon={<TriangleAlert className="size-3.5" />}
+          label="Weak area"
+        />
+        {t.revision_count > 0 && <Badge variant="secondary">{t.revision_count} revisions</Badge>}
       </div>
 
       <Tabs defaultValue="content">
@@ -232,10 +245,14 @@ function TopicEditor() {
             <div className="space-y-2">
               <Label>Priority</Label>
               <Select value={t.priority} onValueChange={(v) => patch({ priority: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {PRIORITIES.map((p) => (
-                    <SelectItem key={p} value={p}>{titleCase(p)}</SelectItem>
+                    <SelectItem key={p} value={p}>
+                      {titleCase(p)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -243,10 +260,14 @@ function TopicEditor() {
             <div className="space-y-2">
               <Label>Difficulty</Label>
               <Select value={t.difficulty} onValueChange={(v) => patch({ difficulty: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {DIFFICULTIES.map((d) => (
-                    <SelectItem key={d} value={d}>{titleCase(d)}</SelectItem>
+                    <SelectItem key={d} value={d}>
+                      {titleCase(d)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

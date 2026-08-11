@@ -68,11 +68,7 @@ export function accessLabel(row: {
 }
 
 /** Blocking issues that must be cleared before a course can be published. */
-export function publishChecklist(input: {
-  course: Course;
-  unitCount: number;
-  topicCount: number;
-}) {
+export function publishChecklist(input: { course: Course; unitCount: number; topicCount: number }) {
   const { course, unitCount, topicCount } = input;
   return [
     { label: "Course has a name", ok: Boolean(course.name?.trim()) },
