@@ -181,7 +181,7 @@ function build(): Store {
           unit_id: unitId,
           subject_id: sid,
           title,
-          content: sampleContent(title),
+          content: {},
           priority: topicIdx === 0 ? "high" : "medium",
           difficulty: topicIdx % 2 ? "hard" : "medium",
           estimated_minutes: 45,
