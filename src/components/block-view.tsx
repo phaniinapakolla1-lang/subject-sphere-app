@@ -123,7 +123,7 @@ export function BlockView({ block }: { block: TopicBlock }) {
 
       {body && block.type !== "code" && block.type !== "formula" && (
         <div
-          className="prose-study text-sm"
+          className="prose-studyos text-sm"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(body) }}
         />
       )}
