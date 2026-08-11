@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowDown,
@@ -59,7 +59,9 @@ export function SmartPasteDialog({
   onSave: (sections: ParsedSection[], mode: SaveMode) => Promise<void> | void;
   hasExistingContent: boolean;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [step, setStep] = useState<"input" | "loading" | "preview" | "error">("input");
+
   const [text, setText] = useState("");
   const [sections, setSections] = useState<ParsedSection[]>([]);
   const [error, setError] = useState("");
