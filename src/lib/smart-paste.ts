@@ -556,3 +556,36 @@ export function standardTemplateContent(): Record<string, string> {
   for (const key of STANDARD_TEMPLATE_KEYS) content[categoryField(key)] = "";
   return content;
 }
+
+/**
+ * Parse a pasted syllabus into units with their topics.
+ * Recognises "Unit 1: Name" / "Module 2 — Name" / "UNIT I" headings, and treats
+ * every following bullet, numbered or indented line as a topic of that unit.
+ */
+export function parseSyllabus(raw: string): { name: string; topics: string[] }[] {
+  const units: { name: string; topics: string[] }[] = [];
+  const unitHead = /^\s*(unit|module|chapter|part)\b[\s:.\-—]*([ivxlcdm\d]+)?[\s:.\-—]*(.*)$/i;
+  let current: { name: string; topics: string[] } | null = null;
+
+  for (const line of raw.split(/\r?\n/)) {
+    const text = line.trim();
+    if (!text) continue;
+    const head = unitHead.exec(text);
+    if (head) {
+      const label = `${titleCase(head[1] ?? "Unit")} ${head[2] ?? units.length + 1}`.trim();
+      const rest = (head[3] ?? "").replace(/^[:.\-—\s]+/, "").trim();
+      current = { name: rest ? `${label} — ${rest}` : label, topics: [] };
+      units.push(current);
+      continue;
+    }
+    const topic = text.replace(/^\s*(?:[-*•>]|\d+[.)]|[a-z][.)])\s*/i, "").trim();
+    if (!topic) continue;
+    if (!current) {
+      current = { name: `Unit ${units.length + 1}`, topics: [] };
+      units.push(current);
+    }
+    current.topics.push(topic.slice(0, 160));
+  }
+
+  return units.filter((u) => u.name || u.topics.length);
+}
