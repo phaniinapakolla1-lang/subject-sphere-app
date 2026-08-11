@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowDown,
@@ -59,7 +59,9 @@ export function SmartPasteDialog({
   onSave: (sections: ParsedSection[], mode: SaveMode) => Promise<void> | void;
   hasExistingContent: boolean;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [step, setStep] = useState<"input" | "loading" | "preview" | "error">("input");
+
   const [text, setText] = useState("");
   const [sections, setSections] = useState<ParsedSection[]>([]);
   const [error, setError] = useState("");
@@ -80,18 +82,29 @@ export function SmartPasteDialog({
     if (!v) setTimeout(reset, 200);
   }
 
+  function fallbackToManualPaste(message: string) {
+    toast.info(message);
+    textareaRef.current?.focus();
+  }
+
   async function pasteFromClipboard() {
+    if (typeof navigator === "undefined" || !navigator.clipboard?.readText) {
+      fallbackToManualPaste("Your browser can't read the clipboard — press Ctrl+V (⌘V) here.");
+      return;
+    }
     try {
       const clip = await navigator.clipboard.readText();
       if (!clip.trim()) {
-        toast.info("Your clipboard is empty — use Ctrl+V instead.");
+        fallbackToManualPaste("Your clipboard is empty — press Ctrl+V (⌘V) here instead.");
         return;
       }
       setText((t) => (t ? `${t}\n${clip}` : clip));
+      textareaRef.current?.focus();
     } catch {
-      toast.info("Clipboard access blocked — paste with Ctrl+V instead.");
+      fallbackToManualPaste("Clipboard access was blocked — press Ctrl+V (⌘V) here instead.");
     }
   }
+
 
   async function analyze(enhance = false) {
     if (!text.trim()) {
@@ -248,7 +261,9 @@ export function SmartPasteDialog({
               </Button>
             </div>
             <Textarea
+              ref={textareaRef}
               autoFocus
+
               rows={14}
               value={text}
               onChange={(e) => setText(e.target.value)}
