@@ -1,37 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Bookmark,
   CheckCircle2,
-  Eye,
   Loader2,
-  Pencil,
-  Plus,
   RefreshCw,
   Sparkles,
   Star,
-  Trash2,
   TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useOne, useUpdate, type Topic } from "@/lib/data";
-import {
-  TOPIC_FIELDS,
-  TOPIC_GROUPS,
-  PRIORITIES,
-  DIFFICULTIES,
-  nextRevisionDate,
-} from "@/lib/topic-schema";
-import { applySections, slug, titleCase } from "@/lib/smart-paste";
-import { SmartPasteDialog } from "@/components/smart-paste-dialog";
-import { renderMarkdown } from "@/lib/markdown";
+import { useAuth } from "@/lib/auth";
+import { useCreate, useList, useOne, useUpdate } from "@/lib/data";
+import { PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
+import { legacyToBlocks, type BlockKind } from "@/lib/blocks";
+import { categoryField, categoryLabel, titleCase, type ParsedSection } from "@/lib/smart-paste";
+import { SmartPasteDialog, type SaveMode } from "@/components/smart-paste-dialog";
+import { BlockEditor } from "@/components/block-editor";
 import { ResourceManager } from "@/components/resource-manager";
 import { PageHeader } from "@/components/ui-kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -41,83 +32,106 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/topics/$topicId")({
   head: () => ({
     meta: [
-      { title: "Topic editor — StudyOS" },
-      { name: "description", content: "Write structured study content for this topic." },
-      { property: "og:title", content: "Topic editor — StudyOS" },
-      { property: "og:description", content: "Definition, explanation, answers, MCQs and more." },
+      { title: "Topic editor — Subject Sphere" },
+      { name: "description", content: "Build topic content from flexible blocks." },
+      { property: "og:title", content: "Topic editor — Subject Sphere" },
+      { property: "og:description", content: "Text, images, tables, code, formulas and questions." },
     ],
   }),
   component: TopicEditor,
 });
 
-type Content = Record<string, string>;
-
 function TopicEditor() {
   const { topicId } = Route.useParams();
+  const { user } = useAuth();
   const topic = useOne("topics", topicId);
   const update = useUpdate("topics", { silent: true });
+  const createBlock = useCreate("topic_blocks");
+  const blocks = useList("topic_blocks", {
+    key: ["of-topic", topicId],
+    build: (q) => q.eq("topic_id", topicId).order("position", { ascending: true }),
+  });
 
-  const [content, setContent] = useState<Content>({});
   const [title, setTitle] = useState("");
-  const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [preview, setPreview] = useState(false);
   const [smartOpen, setSmartOpen] = useState(false);
+  const [migrating, setMigrating] = useState(false);
   const loaded = useRef(false);
-
-  const knownKeys = useMemo(() => new Set(TOPIC_FIELDS.map((f) => f.key)), []);
-  const customKeys = useMemo(
-    () => Object.keys(content).filter((k) => !knownKeys.has(k)),
-    [content, knownKeys],
-  );
-
-  function setField(key: string, value: string) {
-    setContent((c) => ({ ...c, [key]: value }));
-    setDirty(true);
-  }
-
-  function addCustomSection() {
-    const name = window.prompt("Section title (e.g. Exam Points)");
-    if (!name?.trim()) return;
-    const key = slug(name);
-    if (content[key] !== undefined) {
-      toast.info("That section already exists.");
-      return;
-    }
-    setField(key, "");
-  }
 
   useEffect(() => {
     if (topic.data && !loaded.current) {
-      loaded.current = true;
-      setContent((topic.data.content ?? {}) as Content);
       setTitle(topic.data.title);
+      loaded.current = true;
     }
   }, [topic.data]);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const t = setTimeout(async () => {
-      setSaving(true);
-      await update.mutateAsync({ id: topicId, values: { content, title } });
-      setSaving(false);
-      setDirty(false);
-    }, 900);
-    return () => clearTimeout(t);
-  }, [content, title, dirty, topicId, update]);
-
   const t = topic.data;
+  const legacy = (t?.content ?? {}) as Record<string, unknown>;
+  const legacyEntries = Object.entries(legacy).filter(
+    ([, v]) => typeof v === "string" && v.trim(),
+  );
+  const blockCount = blocks.data?.length ?? 0;
 
-  function patch(values: Partial<Topic>) {
+  function patch(values: Record<string, unknown>) {
     update.mutate({ id: topicId, values });
   }
 
-  function revise() {
+  async function importLegacy() {
+    if (!user || !t) return;
+    setMigrating(true);
+    try {
+      const drafts = legacyToBlocks(legacy as Record<string, string>, (k) =>
+        categoryLabel(k) === k ? titleCase(k) : categoryLabel(k),
+      );
+      for (let i = 0; i < drafts.length; i += 1) {
+        const d = drafts[i] as { type: BlockKind; title: string; body: string };
+        await createBlock.mutateAsync({
+          user_id: user.id,
+          topic_id: topicId,
+          subject_id: t.subject_id,
+          type: d.type,
+          title: d.title,
+          body: d.body,
+          position: blockCount + 1 + i,
+        });
+      }
+      patch({ content: {} });
+      toast.success("Older notes converted into blocks");
+    } catch {
+      toast.error("Could not convert the older notes");
+    } finally {
+      setMigrating(false);
+    }
+  }
+
+  async function saveSmartPaste(sections: ParsedSection[], mode: SaveMode) {
+    if (!user || !t) return;
+    const base = mode === "replace" ? 0 : blockCount;
+    for (let i = 0; i < sections.length; i += 1) {
+      const s = sections[i] as ParsedSection;
+      const body = s.content.trim();
+      if (!body) continue;
+      const type: BlockKind = /^\s*[-*\d]/.test(body) ? "list" : "text";
+      await createBlock.mutateAsync({
+        user_id: user.id,
+        topic_id: topicId,
+        subject_id: t.subject_id,
+        type,
+        title:
+          s.category === "uncategorized"
+            ? s.title
+            : categoryLabel(categoryField(s.category)) || s.title,
+        body,
+        position: base + i + 1,
+      });
+    }
+    toast.success(`${sections.length} blocks added`);
+  }
+
+  function markRevised() {
     if (!t) return;
     const count = (t.revision_count ?? 0) + 1;
     patch({
@@ -125,259 +139,142 @@ function TopicEditor() {
       last_revised_at: new Date().toISOString(),
       next_revision_at: nextRevisionDate(count),
     });
-    toast.success(`Revision ${count} logged`);
-  }
-
-  function applySmartPaste(
-    sections: Parameters<typeof applySections>[1],
-    mode: "replace" | "append",
-  ) {
-    setContent((c) => applySections(c, sections, mode));
-    setDirty(true);
-    toast.success(`${sections.length} sections added to this topic`);
+    toast.success("Revision logged");
   }
 
   if (topic.isLoading) {
     return (
-      <div className="flex justify-center py-20">
+      <div className="flex h-64 items-center justify-center">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  if (!t) return <p className="text-muted-foreground">Topic not found.</p>;
+  if (!t) {
+    return (
+      <div className="panel p-10 text-center">
+        <p className="text-sm text-muted-foreground">This topic could not be found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-rise">
-      <Link
-        to="/subjects/$subjectId"
-        params={{ subjectId: t.subject_id }}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" /> Back to subject
-      </Link>
-
       <PageHeader
-        title=""
+        title={
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => title.trim() && title !== t.title && patch({ title: title.trim() })}
+            className="h-auto border-none bg-transparent px-0 text-2xl font-semibold tracking-tight focus-visible:ring-0"
+            aria-label="Topic title"
+          />
+        }
+        subtitle={
+          <Link
+            to="/subjects/$subjectId"
+            params={{ subjectId: t.subject_id }}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> Back to course
+          </Link>
+        }
         actions={
-          <>
-            <span className="mr-2 text-xs text-muted-foreground">
-              {saving ? "Saving…" : dirty ? "Unsaved" : "All changes saved"}
-            </span>
-            <Button size="sm" onClick={() => setSmartOpen(true)}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setSmartOpen(true)}>
               <Sparkles className="size-4" /> Paste &amp; auto-organize
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setPreview((p) => !p)}>
-              {preview ? <Pencil className="size-4" /> : <Eye className="size-4" />}
-              {preview ? "Edit" : "Preview"}
+            <Button variant="outline" onClick={markRevised}>
+              <RefreshCw className="size-4" /> Mark revised
             </Button>
-
-            <Button size="sm" onClick={revise}>
-              <RefreshCw className="size-4" /> Log revision
+            <Button
+              variant={t.completed ? "secondary" : "default"}
+              onClick={() => patch({ completed: !t.completed })}
+            >
+              <CheckCircle2 className="size-4" /> {t.completed ? "Completed" : "Mark complete"}
             </Button>
-          </>
+          </div>
         }
       />
 
-      <input
-        value={title}
-        onChange={(e) => {
-          setTitle(e.target.value);
-          setDirty(true);
-        }}
-        className="mb-4 w-full border-0 bg-transparent text-3xl font-semibold tracking-tight outline-none placeholder:text-muted-foreground"
-        placeholder="Topic title"
-      />
-
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Toggle
-          active={t.completed}
-          onClick={() => patch({ completed: !t.completed })}
-          icon={CheckCircle2}
-          label="Completed"
-        />
-        <Toggle
-          active={t.favorite}
-          onClick={() => patch({ favorite: !t.favorite })}
-          icon={Star}
-          label="Favorite"
-        />
-        <Toggle
-          active={t.bookmarked}
-          onClick={() => patch({ bookmarked: !t.bookmarked })}
-          icon={Bookmark}
-          label="Bookmark"
-        />
-        <Toggle
-          active={t.weak}
-          onClick={() => patch({ weak: !t.weak })}
-          icon={TriangleAlert}
-          label="Weak topic"
-        />
-        <Badge variant="secondary">Revisions: {t.revision_count}</Badge>
-        {t.next_revision_at && (
-          <Badge variant="outline">
-            Next revision {new Date(t.next_revision_at).toLocaleDateString()}
-          </Badge>
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <Toggle active={!!t.favorite} onClick={() => patch({ favorite: !t.favorite })} icon={<Star className="size-3.5" />} label="Favorite" />
+        <Toggle active={!!t.bookmarked} onClick={() => patch({ bookmarked: !t.bookmarked })} icon={<Bookmark className="size-3.5" />} label="Bookmark" />
+        <Toggle active={!!t.weak} onClick={() => patch({ weak: !t.weak })} icon={<TriangleAlert className="size-3.5" />} label="Weak area" />
+        {t.revision_count > 0 && (
+          <Badge variant="secondary">{t.revision_count} revisions</Badge>
         )}
       </div>
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-4">
-        <div className="space-y-2">
-          <Label>Priority</Label>
-          <Select value={t.priority} onValueChange={(v) => patch({ priority: v })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PRIORITIES.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Difficulty</Label>
-          <Select value={t.difficulty} onValueChange={(v) => patch({ difficulty: v })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {DIFFICULTIES.map((d) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Estimated minutes</Label>
-          <Input
-            type="number"
-            defaultValue={t.estimated_minutes}
-            onBlur={(e) => patch({ estimated_minutes: Number(e.target.value) || 0 })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Previous question</Label>
-          <Select
-            value={t.previous_question ? "yes" : "no"}
-            onValueChange={(v) => patch({ previous_question: v === "yes" })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="yes">Asked before</SelectItem>
-              <SelectItem value="no">Not asked</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Tabs defaultValue="core">
-        <TabsList className="flex-wrap">
-          {TOPIC_GROUPS.map((g) => (
-            <TabsTrigger key={g.id} value={g.id}>
-              {g.label}
-            </TabsTrigger>
-          ))}
-          <TabsTrigger value="sections">
-            Sections{customKeys.length ? ` (${customKeys.length})` : ""}
-          </TabsTrigger>
+      <Tabs defaultValue="content">
+        <TabsList>
+          <TabsTrigger value="content">Content</TabsTrigger>
+          <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="resources">Resources</TabsTrigger>
         </TabsList>
 
-        {TOPIC_GROUPS.map((g) => (
-          <TabsContent key={g.id} value={g.id} className="space-y-4">
-            {TOPIC_FIELDS.filter((f) => f.group === g.id).map((f) => (
-              <div key={f.key} className="panel p-4">
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {f.label}
-                </Label>
-                {preview ? (
-                  <div
-                    className="prose-studyos mt-2 text-sm leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                      __html: renderMarkdown(content[f.key] ?? ""),
-                    }}
-                  />
-                ) : (
-                  <Textarea
-                    className="mt-2 resize-y border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-                    rows={f.rows ?? 4}
-                    placeholder={f.placeholder}
-                    value={content[f.key] ?? ""}
-                    onChange={(e) => setField(f.key, e.target.value)}
-                  />
-                )}
-              </div>
-            ))}
-          </TabsContent>
-        ))}
-
-        <TabsContent value="sections" className="space-y-4">
-          {customKeys.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              No extra sections yet. Use Smart Paste or add your own section below.
-            </p>
-          )}
-          {customKeys.map((key) => (
-            <div key={key} className="panel p-4">
-              <div className="flex items-center justify-between gap-2">
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {titleCase(key.replace(/_/g, " "))}
-                </Label>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Delete section"
-                  className="text-destructive"
-                  onClick={() => {
-                    setContent((c) => {
-                      const next = { ...c };
-                      delete next[key];
-                      return next;
-                    });
-                    setDirty(true);
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-              {preview ? (
-                <div
-                  className="prose-studyos mt-2 text-sm leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(content[key] ?? "") }}
-                />
-              ) : (
-                <Textarea
-                  className="mt-2 resize-y border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-                  rows={5}
-                  value={content[key] ?? ""}
-                  onChange={(e) => setField(key, e.target.value)}
-                />
-              )}
+        <TabsContent value="content" className="mt-4 space-y-4">
+          {legacyEntries.length > 0 && (
+            <div className="panel flex flex-wrap items-center gap-3 border-warning/40 p-4">
+              <p className="text-sm text-muted-foreground">
+                This topic has {legacyEntries.length} sections saved in the older format.
+              </p>
+              <Button size="sm" variant="outline" onClick={importLegacy} disabled={migrating}>
+                {migrating ? <Loader2 className="size-4 animate-spin" /> : null}
+                Convert to blocks
+              </Button>
             </div>
-          ))}
-          <Button variant="outline" size="sm" onClick={addCustomSection}>
-            <Plus className="size-4" /> Add custom section
-          </Button>
+          )}
+          <BlockEditor topicId={topicId} subjectId={t.subject_id} userId={user?.id} />
         </TabsContent>
 
-        <TabsContent value="resources">
-          <ResourceManager topicId={t.id} subjectId={t.subject_id} />
+        <TabsContent value="details" className="mt-4">
+          <div className="panel grid gap-4 p-5 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Priority</Label>
+              <Select value={t.priority} onValueChange={(v) => patch({ priority: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>{titleCase(p)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Difficulty</Label>
+              <Select value={t.difficulty} onValueChange={(v) => patch({ difficulty: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DIFFICULTIES.map((d) => (
+                    <SelectItem key={d} value={d}>{titleCase(d)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Estimated minutes</Label>
+              <Input
+                type="number"
+                defaultValue={t.estimated_minutes}
+                onBlur={(e) => patch({ estimated_minutes: Number(e.target.value) || 30 })}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="resources" className="mt-4">
+          <div className="panel p-5">
+            <ResourceManager topicId={topicId} />
+          </div>
         </TabsContent>
       </Tabs>
 
       <SmartPasteDialog
         open={smartOpen}
         onOpenChange={setSmartOpen}
-        hasExistingContent={Object.values(content).some((v) => (v ?? "").trim())}
-        onSave={applySmartPaste}
+        onSave={saveSmartPaste}
+        hasExistingContent={blockCount > 0}
       />
     </div>
   );
@@ -386,25 +283,17 @@ function TopicEditor() {
 function Toggle({
   active,
   onClick,
-  icon: Icon,
+  icon,
   label,
 }: {
   active: boolean;
   onClick: () => void;
-  icon: React.ElementType;
+  icon: React.ReactNode;
   label: string;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors",
-        active
-          ? "border-primary/50 bg-primary/10 text-primary"
-          : "border-border text-muted-foreground hover:text-foreground",
-      )}
-    >
-      <Icon className="size-3.5" /> {label}
-    </button>
+    <Button variant={active ? "secondary" : "ghost"} size="sm" onClick={onClick}>
+      {icon} {label}
+    </Button>
   );
 }
