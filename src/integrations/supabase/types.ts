@@ -64,6 +64,101 @@ export type Database = {
           },
         ]
       }
+      course_access: {
+        Row: {
+          course: string | null
+          created_at: string
+          granted_by: string | null
+          id: string
+          scope: string
+          section: string | null
+          semester_label: string | null
+          student_id: string | null
+          subject_id: string
+        }
+        Insert: {
+          course?: string | null
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          scope?: string
+          section?: string | null
+          semester_label?: string | null
+          student_id?: string | null
+          subject_id: string
+        }
+        Update: {
+          course?: string | null
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          scope?: string
+          section?: string | null
+          semester_label?: string | null
+          student_id?: string | null
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_access_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          opened_at: string
+          status: string
+          subject_id: string
+          topic_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string
+          status?: string
+          subject_id: string
+          topic_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          opened_at?: string
+          status?: string
+          subject_id?: string
+          topic_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_progress_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_progress_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exams: {
         Row: {
           created_at: string
@@ -453,57 +548,156 @@ export type Database = {
       }
       subjects: {
         Row: {
+          academic_year: string | null
           archived: boolean
+          category: string | null
           code: string | null
           color: string
           created_at: string
           credits: number | null
           description: string | null
+          duration: string | null
           estimated_hours: number | null
           favorite: boolean
           icon: string
           id: string
+          is_course: boolean
+          learning_outcomes: string[]
+          level: string
           name: string
           position: number
+          published_at: string | null
           semester: number | null
+          slug: string | null
+          status: string
+          thumbnail_url: string | null
           updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          academic_year?: string | null
+          archived?: boolean
+          category?: string | null
+          code?: string | null
+          color?: string
+          created_at?: string
+          credits?: number | null
+          description?: string | null
+          duration?: string | null
+          estimated_hours?: number | null
+          favorite?: boolean
+          icon?: string
+          id?: string
+          is_course?: boolean
+          learning_outcomes?: string[]
+          level?: string
+          name: string
+          position?: number
+          published_at?: string | null
+          semester?: number | null
+          slug?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          academic_year?: string | null
+          archived?: boolean
+          category?: string | null
+          code?: string | null
+          color?: string
+          created_at?: string
+          credits?: number | null
+          description?: string | null
+          duration?: string | null
+          estimated_hours?: number | null
+          favorite?: boolean
+          icon?: string
+          id?: string
+          is_course?: boolean
+          learning_outcomes?: string[]
+          level?: string
+          name?: string
+          position?: number
+          published_at?: string | null
+          semester?: number | null
+          slug?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      topic_blocks: {
+        Row: {
+          body: string
+          caption: string | null
+          created_at: string
+          id: string
+          meta: Json
+          position: number
+          storage_path: string | null
+          subject_id: string | null
+          title: string | null
+          topic_id: string
+          type: string
+          updated_at: string
+          url: string | null
           user_id: string
         }
         Insert: {
-          archived?: boolean
-          code?: string | null
-          color?: string
+          body?: string
+          caption?: string | null
           created_at?: string
-          credits?: number | null
-          description?: string | null
-          estimated_hours?: number | null
-          favorite?: boolean
-          icon?: string
           id?: string
-          name: string
+          meta?: Json
           position?: number
-          semester?: number | null
+          storage_path?: string | null
+          subject_id?: string | null
+          title?: string | null
+          topic_id: string
+          type?: string
           updated_at?: string
+          url?: string | null
           user_id: string
         }
         Update: {
-          archived?: boolean
-          code?: string | null
-          color?: string
+          body?: string
+          caption?: string | null
           created_at?: string
-          credits?: number | null
-          description?: string | null
-          estimated_hours?: number | null
-          favorite?: boolean
-          icon?: string
           id?: string
-          name?: string
+          meta?: Json
           position?: number
-          semester?: number | null
+          storage_path?: string | null
+          subject_id?: string | null
+          title?: string | null
+          topic_id?: string
+          type?: string
           updated_at?: string
+          url?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "topic_blocks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_blocks_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       topics: {
         Row: {
@@ -662,6 +856,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_read_course: { Args: { _subject_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
