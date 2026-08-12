@@ -14,7 +14,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { useCreate, useList, useOne, useUpdate } from "@/lib/data";
 import { PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
-import { legacyToBlocks, type BlockKind } from "@/lib/blocks";
+import { legacyToBlocks, type BlockKind, type TopicBlock } from "@/lib/blocks";
+import { TopicReader } from "@/components/topic-reader";
+
 import { categoryField, categoryLabel, titleCase, type ParsedSection } from "@/lib/smart-paste";
 import { SmartPasteDialog, type SaveMode } from "@/components/smart-paste-dialog";
 import { BlockEditor } from "@/components/block-editor";
@@ -50,7 +52,7 @@ export const Route = createFileRoute("/_authenticated/topics/$topicId")({
 
 function TopicEditor() {
   const { topicId } = Route.useParams();
-  const { user } = useAuth();
+  const { user, isAdmin, demo } = useAuth();
   const topic = useOne("topics", topicId);
   const update = useUpdate("topics", { silent: true });
   const createBlock = useCreate("topic_blocks");
@@ -58,6 +60,10 @@ function TopicEditor() {
     key: ["of-topic", topicId],
     build: (q) => q.eq("topic_id", topicId).order("position", { ascending: true }),
   });
+  const subject = useOne("subjects", topic.data?.subject_id);
+  const unit = useOne("units", topic.data?.unit_id);
+  const [mode, setMode] = useState<"read" | "edit">("read");
+
 
   const [title, setTitle] = useState("");
   const [smartOpen, setSmartOpen] = useState(false);
@@ -159,15 +165,53 @@ function TopicEditor() {
     );
   }
 
+  const canEdit = isAdmin || demo || (!!user && t.user_id === user.id);
+  const modeSwitch = canEdit ? (
+    <div className="inline-flex overflow-hidden rounded-lg border border-border">
+      <button
+        type="button"
+        onClick={() => setMode("read")}
+        className={`px-3 py-1.5 text-xs font-medium ${mode === "read" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+      >
+        📖 Read
+      </button>
+      <button
+        type="button"
+        onClick={() => setMode("edit")}
+        className={`px-3 py-1.5 text-xs font-medium ${mode === "edit" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+      >
+        ✏️ Edit
+      </button>
+    </div>
+  ) : null;
+
+  if (mode === "read" || !canEdit) {
+    return (
+      <TopicReader
+        topic={t}
+        blocks={(blocks.data ?? []) as TopicBlock[]}
+        subjectName={subject.data?.name}
+        unitName={unit.data?.name}
+        bookmarked={!!t.bookmarked}
+        onToggleBookmark={() => patch({ bookmarked: !t.bookmarked })}
+        actions={modeSwitch}
+      />
+    );
+  }
+
   return (
     <div className="animate-rise">
-      <Link
-        to="/subjects/$subjectId"
-        params={{ subjectId: t.subject_id }}
-        className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-3.5" /> Back to course
-      </Link>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <Link
+          to="/subjects/$subjectId"
+          params={{ subjectId: t.subject_id }}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-3.5" /> Back to course
+        </Link>
+        {modeSwitch}
+      </div>
+
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
