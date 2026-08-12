@@ -224,11 +224,11 @@ export function TopicReader({
 }: {
   topic: Topic;
   blocks: TopicBlock[];
-  subjectName?: string;
-  unitName?: string;
+  subjectName?: string | undefined;
+  unitName?: string | undefined;
   bookmarked: boolean;
   onToggleBookmark: () => void;
-  actions?: React.ReactNode;
+  actions?: React.ReactNode | undefined;
 }) {
   const toc = useToc(blocks);
   const [active, setActive] = useState<string | null>(null);
