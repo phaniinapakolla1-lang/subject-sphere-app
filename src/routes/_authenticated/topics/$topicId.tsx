@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_authenticated/topics/$topicId")({
 
 function TopicEditor() {
   const { topicId } = Route.useParams();
-  const { user } = useAuth();
+  const { user, isAdmin, demo } = useAuth();
   const topic = useOne("topics", topicId);
   const update = useUpdate("topics", { silent: true });
   const createBlock = useCreate("topic_blocks");
@@ -58,6 +58,10 @@ function TopicEditor() {
     key: ["of-topic", topicId],
     build: (q) => q.eq("topic_id", topicId).order("position", { ascending: true }),
   });
+  const subject = useOne("subjects", topic.data?.subject_id);
+  const unit = useOne("units", topic.data?.unit_id);
+  const [mode, setMode] = useState<"read" | "edit">("read");
+
 
   const [title, setTitle] = useState("");
   const [smartOpen, setSmartOpen] = useState(false);
