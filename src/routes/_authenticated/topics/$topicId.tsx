@@ -163,15 +163,53 @@ function TopicEditor() {
     );
   }
 
+  const canEdit = isAdmin || demo || (!!user && t.user_id === user.id);
+  const modeSwitch = canEdit ? (
+    <div className="inline-flex overflow-hidden rounded-lg border border-border">
+      <button
+        type="button"
+        onClick={() => setMode("read")}
+        className={`px-3 py-1.5 text-xs font-medium ${mode === "read" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+      >
+        📖 Read
+      </button>
+      <button
+        type="button"
+        onClick={() => setMode("edit")}
+        className={`px-3 py-1.5 text-xs font-medium ${mode === "edit" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+      >
+        ✏️ Edit
+      </button>
+    </div>
+  ) : null;
+
+  if (mode === "read" || !canEdit) {
+    return (
+      <TopicReader
+        topic={t}
+        blocks={(blocks.data ?? []) as TopicBlock[]}
+        subjectName={subject.data?.name}
+        unitName={unit.data?.name}
+        bookmarked={!!t.bookmarked}
+        onToggleBookmark={() => patch({ bookmarked: !t.bookmarked })}
+        actions={modeSwitch}
+      />
+    );
+  }
+
   return (
     <div className="animate-rise">
-      <Link
-        to="/subjects/$subjectId"
-        params={{ subjectId: t.subject_id }}
-        className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-3.5" /> Back to course
-      </Link>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <Link
+          to="/subjects/$subjectId"
+          params={{ subjectId: t.subject_id }}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-3.5" /> Back to course
+        </Link>
+        {modeSwitch}
+      </div>
+
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
