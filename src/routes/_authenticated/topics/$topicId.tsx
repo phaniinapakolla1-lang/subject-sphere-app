@@ -14,7 +14,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { useCreate, useList, useOne, useUpdate } from "@/lib/data";
 import { PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
-import { legacyToBlocks, type BlockKind } from "@/lib/blocks";
+import { legacyToBlocks, type BlockKind, type TopicBlock } from "@/lib/blocks";
+import { TopicReader } from "@/components/topic-reader";
+
 import { categoryField, categoryLabel, titleCase, type ParsedSection } from "@/lib/smart-paste";
 import { SmartPasteDialog, type SaveMode } from "@/components/smart-paste-dialog";
 import { BlockEditor } from "@/components/block-editor";
