@@ -19,6 +19,26 @@ export function renderMarkdown(input: string): string {
       }
 
       const lines = block.split("\n");
+      if (lines.length > 1 && lines.every((l) => /^\s*\|.*\|\s*$/.test(l))) {
+        const rows = lines
+          .filter((l) => !/^\s*\|[\s:|-]+\|\s*$/.test(l))
+          .map((l) =>
+            l
+              .trim()
+              .replace(/^\||\|$/g, "")
+              .split("|")
+              .map((c) => inline(c.trim())),
+          );
+        const [head, ...rest] = rows;
+        const thead = head
+          ? `<thead><tr>${head.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`
+          : "";
+        const tbody = rest.length
+          ? `<tbody>${rest.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>`
+          : "";
+        return `<div class="overflow-x-auto"><table>${thead}${tbody}</table></div>`;
+      }
+
       if (lines.every((l) => /^\s*([-*])\s+/.test(l))) {
         const items = lines
           .map((l) => `<li>${inline(l.replace(/^\s*[-*]\s+/, ""))}</li>`)
