@@ -684,7 +684,7 @@ export function categoryBlockKind(category: string, title: string, body: string)
   const mapped = CATEGORY_BLOCK[category];
   const detected = detectBlockKind(title, body);
   if (detected === "table" || detected === "code" || detected === "formula") return detected;
-  if (mapped) return mapped === "table" && detected !== "table" ? "text" : mapped;
+  if (mapped) return mapped === "table" ? "text" : mapped;
   return detected;
 }
 
