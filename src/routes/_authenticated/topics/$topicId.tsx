@@ -17,7 +17,13 @@ import { PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
 import { legacyToBlocks, type BlockKind, type TopicBlock } from "@/lib/blocks";
 import { TopicReader } from "@/components/topic-reader";
 
-import { categoryField, categoryLabel, titleCase, type ParsedSection } from "@/lib/smart-paste";
+import {
+  categoryLabel,
+  sectionsToBlockDrafts,
+  titleCase,
+  type BlockDraft,
+  type ParsedSection,
+} from "@/lib/smart-paste";
 import { SmartPasteDialog, type SaveMode } from "@/components/smart-paste-dialog";
 import { BlockEditor } from "@/components/block-editor";
 import { ResourceManager } from "@/components/resource-manager";
@@ -116,26 +122,22 @@ function TopicEditor() {
 
   async function saveSmartPaste(sections: ParsedSection[], mode: SaveMode) {
     if (!user || !t) return;
+    const drafts = sectionsToBlockDrafts(sections);
     const base = mode === "replace" ? 0 : blockCount;
-    for (let i = 0; i < sections.length; i += 1) {
-      const s = sections[i] as ParsedSection;
-      const body = s.content.trim();
-      if (!body) continue;
-      const type: BlockKind = /^\s*[-*\d]/.test(body) ? "list" : "text";
+    for (let i = 0; i < drafts.length; i += 1) {
+      const d = drafts[i] as BlockDraft;
+      if (!d.body.trim()) continue;
       await createBlock.mutateAsync({
         user_id: user.id,
         topic_id: topicId,
         subject_id: t.subject_id,
-        type,
-        title:
-          s.category === "uncategorized"
-            ? s.title
-            : categoryLabel(categoryField(s.category)) || s.title,
-        body,
+        type: d.type,
+        title: d.title,
+        body: d.body,
         position: base + i + 1,
       });
     }
-    toast.success(`${sections.length} blocks added`);
+    toast.success(`${drafts.length} blocks added`);
   }
 
   function markRevised() {

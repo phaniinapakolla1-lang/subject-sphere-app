@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowDown,
@@ -21,6 +21,8 @@ import {
   mergeSameCategory,
   newSectionId,
   parseSmartPaste,
+  sectionsToBlockDrafts,
+  type BlockDraft,
   type ParsedSection,
 } from "@/lib/smart-paste";
 import { organizePastedText } from "@/lib/smart-paste.functions";
@@ -44,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { renderMarkdown } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 
 export type SaveMode = "replace" | "append";
@@ -68,6 +71,9 @@ export function SmartPasteDialog({
   const [progress, setProgress] = useState(0);
   const [mode, setMode] = useState<SaveMode>(hasExistingContent ? "append" : "replace");
   const [saving, setSaving] = useState(false);
+  const [rendered, setRendered] = useState(false);
+
+  const drafts = useMemo(() => sectionsToBlockDrafts(sections), [sections]);
 
   function reset() {
     setStep("input");
@@ -75,6 +81,7 @@ export function SmartPasteDialog({
     setSections([]);
     setError("");
     setProgress(0);
+    setRendered(false);
   }
 
   function close(v: boolean) {
@@ -317,39 +324,60 @@ export function SmartPasteDialog({
               <h3 className="flex items-center gap-2 text-sm font-semibold">
                 <Sparkles className="size-4 text-primary" /> Auto-organized content
                 <Badge variant="secondary">{sections.length} sections</Badge>
+                <Badge variant="outline">{drafts.length} blocks</Badge>
               </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  setSections((list) =>
-                    list.map((s) => ({ ...s, content: cleanFormatting(s.content) })),
-                  )
-                }
-              >
-                🧹 Clean formatting
-              </Button>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" onClick={() => setRendered((r) => !r)}>
+                  {rendered ? "Edit sections" : "Preview result"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setSections((list) =>
+                      list.map((s) => ({ ...s, content: cleanFormatting(s.content) })),
+                    )
+                  }
+                >
+                  🧹 Clean formatting
+                </Button>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {sections.map((s, i) => (
-                <SectionCard
-                  key={s.id}
-                  section={s}
-                  first={i === 0}
-                  last={i === sections.length - 1}
-                  onChange={(v) => patch(s.id, v)}
-                  onDelete={() => setSections((l) => l.filter((x) => x.id !== s.id))}
-                  onMove={(d) => move(s.id, d)}
-                  onMergeUp={() => mergeUp(s.id)}
-                  onSplit={() => splitSection(s.id)}
-                />
-              ))}
-            </div>
+            {rendered ? (
+              <div className="space-y-3 rounded-xl border border-border bg-card/40 p-4">
+                {drafts.map((d, i) => (
+                  <DraftPreview key={i} draft={d} />
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  {sections.map((s, i) => (
+                    <SectionCard
+                      key={s.id}
+                      section={s}
+                      first={i === 0}
+                      last={i === sections.length - 1}
+                      onChange={(v) => patch(s.id, v)}
+                      onDelete={() => setSections((l) => l.filter((x) => x.id !== s.id))}
+                      onMove={(d) => move(s.id, d)}
+                      onMergeUp={() => mergeUp(s.id)}
+                      onSplit={() => splitSection(s.id)}
+                    />
+                  ))}
+                </div>
 
-            <Button variant="outline" size="sm" onClick={addSection} className="w-full sm:w-auto">
-              <Plus className="size-4" /> Add section
-            </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addSection}
+                  className="w-full sm:w-auto"
+                >
+                  <Plus className="size-4" /> Add section
+                </Button>
+              </>
+            )}
 
             {hasExistingContent && (
               <div className="panel space-y-2 p-4">
@@ -369,9 +397,14 @@ export function SmartPasteDialog({
             )}
 
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Button variant="ghost" onClick={() => setStep("input")}>
-                <ArrowLeft className="size-4" /> Edit raw text
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" onClick={() => close(false)}>
+                  Cancel
+                </Button>
+                <Button variant="ghost" onClick={() => setStep("input")}>
+                  <ArrowLeft className="size-4" /> Edit raw text
+                </Button>
+              </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => analyze(true)}>
                   <Wand2 className="size-4" /> Enhance with AI
@@ -383,6 +416,7 @@ export function SmartPasteDialog({
             </div>
           </div>
         )}
+
       </DialogContent>
     </Dialog>
   );
@@ -501,5 +535,39 @@ function SectionCard({
         </Button>
       </div>
     </div>
+  );
+}
+
+function DraftPreview({ draft }: { draft: BlockDraft }) {
+  const tone =
+    draft.type === "important"
+      ? "border-warning/40 bg-warning/5"
+      : draft.type === "note"
+        ? "border-primary/30 bg-primary/5"
+        : draft.type === "question"
+          ? "border-success/30 bg-success/5"
+          : draft.type === "code" || draft.type === "formula"
+            ? "border-border bg-muted/40"
+            : "border-transparent";
+
+  return (
+    <section className={cn("rounded-lg border p-3", tone)}>
+      <div className="mb-1 flex items-center gap-2">
+        {draft.title && <h4 className="text-sm font-semibold">{draft.title}</h4>}
+        <Badge variant="outline" className="ml-auto text-[10px] uppercase">
+          {draft.type}
+        </Badge>
+      </div>
+      {draft.type === "code" || draft.type === "formula" ? (
+        <pre className="overflow-x-auto rounded-md bg-muted/60 p-2 text-xs">
+          <code>{draft.body}</code>
+        </pre>
+      ) : (
+        <div
+          className="prose-studyos text-sm"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(draft.body) }}
+        />
+      )}
+    </section>
   );
 }
