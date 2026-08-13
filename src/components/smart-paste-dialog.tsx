@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowDown,
@@ -21,6 +21,8 @@ import {
   mergeSameCategory,
   newSectionId,
   parseSmartPaste,
+  sectionsToBlockDrafts,
+  type BlockDraft,
   type ParsedSection,
 } from "@/lib/smart-paste";
 import { organizePastedText } from "@/lib/smart-paste.functions";
@@ -44,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { renderMarkdown } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 
 export type SaveMode = "replace" | "append";
@@ -68,6 +71,9 @@ export function SmartPasteDialog({
   const [progress, setProgress] = useState(0);
   const [mode, setMode] = useState<SaveMode>(hasExistingContent ? "append" : "replace");
   const [saving, setSaving] = useState(false);
+  const [rendered, setRendered] = useState(false);
+
+  const drafts = useMemo(() => sectionsToBlockDrafts(sections), [sections]);
 
   function reset() {
     setStep("input");
@@ -75,6 +81,7 @@ export function SmartPasteDialog({
     setSections([]);
     setError("");
     setProgress(0);
+    setRendered(false);
   }
 
   function close(v: boolean) {
@@ -528,5 +535,39 @@ function SectionCard({
         </Button>
       </div>
     </div>
+  );
+}
+
+function DraftPreview({ draft }: { draft: BlockDraft }) {
+  const tone =
+    draft.type === "important"
+      ? "border-warning/40 bg-warning/5"
+      : draft.type === "note"
+        ? "border-primary/30 bg-primary/5"
+        : draft.type === "question"
+          ? "border-success/30 bg-success/5"
+          : draft.type === "code" || draft.type === "formula"
+            ? "border-border bg-muted/40"
+            : "border-transparent";
+
+  return (
+    <section className={cn("rounded-lg border p-3", tone)}>
+      <div className="mb-1 flex items-center gap-2">
+        {draft.title && <h4 className="text-sm font-semibold">{draft.title}</h4>}
+        <Badge variant="outline" className="ml-auto text-[10px] uppercase">
+          {draft.type}
+        </Badge>
+      </div>
+      {draft.type === "code" || draft.type === "formula" ? (
+        <pre className="overflow-x-auto rounded-md bg-muted/60 p-2 text-xs">
+          <code>{draft.body}</code>
+        </pre>
+      ) : (
+        <div
+          className="prose-studyos text-sm"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(draft.body) }}
+        />
+      )}
+    </section>
   );
 }
