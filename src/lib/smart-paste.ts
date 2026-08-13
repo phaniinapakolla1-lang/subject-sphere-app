@@ -296,21 +296,39 @@ export function newSectionId() {
 
 /** Normalize whitespace, bullets and numbering without changing meaning. */
 export function cleanText(input: string): string {
-  return input
-    .replace(/\r\n?/g, "\n")
-    .replace(/[\u00a0\u2007\u202f]/g, " ")
-    .split("\n")
-    .map((line) =>
-      line
-        .replace(/[ \t]+/g, " ")
-        .replace(/^\s*[•▪◦●·*–—]\s+/, "- ")
-        .replace(/^\s*(\d+)\s*[).]\s+/, "$1. ")
-        .trimEnd(),
-    )
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return (
+    input
+      .replace(/\r\n?/g, "\n")
+      // pasted HTML artifacts
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n")
+      .replace(/<li[^>]*>/gi, "- ")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      // invisible / exotic whitespace
+      .replace(/[\u200b-\u200d\ufeff]/g, "")
+      .replace(/[\u00a0\u2007\u202f\u2000-\u2006]/g, " ")
+      .split("\n")
+      .map((line) =>
+        line
+          .replace(/\t/g, " ")
+          .replace(/ {2,}/g, " ")
+          .replace(/^\s*(?:[•▪◦●·○▶►*+]|[-–—]{1,2})\s+/, "- ")
+          .replace(/^\s*(\d+)\s*[).]\s+/, "$1. ")
+          .replace(/^\s+/, "")
+          .trimEnd(),
+      )
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 }
+
 
 /** Remove duplicated consecutive lines and stray heading repeats. */
 export function cleanFormatting(input: string): string {
