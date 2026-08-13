@@ -607,3 +607,148 @@ export function parseSyllabus(raw: string): { name: string; topics: string[] }[]
 
   return units.filter((u) => u.name || u.topics.length);
 }
+
+/* ------------------------------------------------------------------ *
+ * Phase 2 — structure detection: sections -> topic_blocks drafts
+ * ------------------------------------------------------------------ */
+
+/** Kinds supported by the existing topic_blocks model (see lib/blocks.ts). */
+export type PasteBlockKind =
+  | "text"
+  | "heading"
+  | "list"
+  | "table"
+  | "code"
+  | "formula"
+  | "note"
+  | "important"
+  | "question"
+  | "divider";
+
+export type BlockDraft = { type: PasteBlockKind; title: string; body: string };
+
+/** Category -> best matching existing block kind. */
+const CATEGORY_BLOCK: Record<string, PasteBlockKind> = {
+  key_points: "important",
+  importance: "important",
+  notes: "note",
+  formula: "formula",
+  syntax: "code",
+  algorithm: "code",
+  mcqs: "question",
+  previous_questions: "question",
+  answer_2: "question",
+  answer_5: "question",
+  answer_10: "question",
+  comparison: "table",
+};
+
+const WARNING_RE = /\b(warning|caution|careful|do not|don't|avoid|pitfall)\b/i;
+const IMPORTANT_RE = /\b(important|must remember|note that this is important|key point|exam tip)\b/i;
+const NOTE_RE = /\b(note|remark|tip|hint)\b/i;
+const QUESTION_RE = /\b(question|q\d|mcq|viva|exam answer|answer)\b/i;
+const FORMULA_RE = /\b(formula|equation)\b/i;
+const CODE_RE = /\b(code|syntax|program|query|pseudocode)\b/i;
+
+function isListLine(line: string) {
+  return /^\s*(?:-\s+|\d+\.\s+)/.test(line);
+}
+
+function isTableLine(line: string) {
+  return line.trim().startsWith("|") && line.includes("|", 1);
+}
+
+/** Detect the block kind for a chunk of already-cleaned text. */
+export function detectBlockKind(title: string, body: string): PasteBlockKind {
+  const lines = body.split("\n").filter((l) => l.trim());
+  if (!lines.length) return "text";
+  if (lines.every(isTableLine) && lines.length >= 2) return "table";
+  if (/^```/.test(body.trim())) return "code";
+
+  const label = title.toLowerCase();
+  if (FORMULA_RE.test(label)) return "formula";
+  if (CODE_RE.test(label)) return "code";
+  if (QUESTION_RE.test(label)) return "question";
+  if (WARNING_RE.test(label) || IMPORTANT_RE.test(label)) return "important";
+  if (NOTE_RE.test(label)) return "note";
+
+  if (lines.filter(isListLine).length >= Math.max(2, Math.ceil(lines.length * 0.6))) return "list";
+  if (WARNING_RE.test(lines[0] ?? "") && body.length < 400) return "important";
+  if (/^\s*(note|tip)\s*[:\-]/i.test(body)) return "note";
+  if (/\?\s*$/m.test(body) && lines.length <= 6 && QUESTION_RE.test(body)) return "question";
+  return "text";
+}
+
+/** Block kind for a detected academic category. */
+export function categoryBlockKind(category: string, title: string, body: string): PasteBlockKind {
+  const mapped = CATEGORY_BLOCK[category];
+  const detected = detectBlockKind(title, body);
+  if (detected === "table" || detected === "code" || detected === "formula") return detected;
+  if (mapped) return mapped === "table" && detected !== "table" ? "text" : mapped;
+  return detected;
+}
+
+/**
+ * Split one parsed section into one or more blocks so that lists, tables and
+ * code inside a section become their own blocks instead of one dense paragraph.
+ */
+export function sectionToBlockDrafts(section: {
+  category: string;
+  title: string;
+  content: string;
+}): BlockDraft[] {
+  const body = cleanFormatting(section.content);
+  if (!body.trim()) return [];
+
+  const forced = CATEGORY_BLOCK[section.category];
+  if (forced === "note" || forced === "important" || forced === "question")
+    return [{ type: forced, title: section.title, body }];
+
+  const kinds: BlockDraft[] = [];
+  let buffer: string[] = [];
+  let bufferKind: PasteBlockKind | null = null;
+
+  const flush = () => {
+    const text = buffer.join("\n").trim();
+    buffer = [];
+    if (!text || !bufferKind) return;
+    kinds.push({ type: bufferKind, title: "", body: text });
+    bufferKind = null;
+  };
+
+  for (const line of body.split("\n")) {
+    const kind: PasteBlockKind | null = !line.trim()
+      ? null
+      : isTableLine(line)
+        ? "table"
+        : isListLine(line)
+          ? "list"
+          : "text";
+    if (kind === null) {
+      if (bufferKind === "text") flush();
+      else if (buffer.length) buffer.push("");
+      continue;
+    }
+    if (bufferKind && kind !== bufferKind) flush();
+    bufferKind = kind;
+    buffer.push(line);
+  }
+  flush();
+
+  if (!kinds.length) return [{ type: "text", title: section.title, body }];
+
+  // Refine the first block's kind using the section title, and carry the title.
+  const first = kinds[0] as BlockDraft;
+  const refined = categoryBlockKind(section.category, section.title, first.body);
+  if (kinds.length === 1) return [{ type: refined, title: section.title, body: first.body }];
+  first.title = section.title;
+  if (refined === "formula" || refined === "code") first.type = refined;
+  return kinds;
+}
+
+/** Convert a full set of parsed sections into topic_blocks drafts. */
+export function sectionsToBlockDrafts(
+  sections: { category: string; title: string; content: string }[],
+): BlockDraft[] {
+  return sections.flatMap(sectionToBlockDrafts);
+}
