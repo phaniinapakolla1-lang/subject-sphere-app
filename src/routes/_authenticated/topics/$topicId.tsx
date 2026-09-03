@@ -202,7 +202,7 @@ function TopicEditor() {
   }
 
   return (
-    <div className="animate-rise">
+    <div className="animate-rise mx-auto w-full max-w-[1080px]">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <Link
           to="/subjects/$subjectId"
