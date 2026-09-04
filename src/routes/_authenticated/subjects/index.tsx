@@ -330,17 +330,20 @@ function SubjectsPage() {
 
 function SubjectCard({
   subject,
+  canManage,
   onEdit,
   onDelete,
   onToggle,
   onMove,
 }: {
   subject: Subject;
+  canManage: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onToggle: (values: Partial<Subject>) => void;
   onMove: (dir: -1 | 1) => void;
 }) {
+
   const topics = useList("topics", {
     key: ["by-subject", subject.id],
     build: (q) => q.eq("subject_id", subject.id),
