@@ -86,7 +86,9 @@ const EMPTY: Draft = {
 };
 
 function SubjectsPage() {
-  const { user } = useAuth();
+  const { user, isAdmin, demo } = useAuth();
+  const canManage = isAdmin || demo;
+
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("position");
   const [showArchived, setShowArchived] = useState(false);
@@ -175,9 +177,11 @@ function SubjectsPage() {
         title="Subjects"
         subtitle="Every course you're studying, with units, topics and progress."
         actions={
+          !canManage ? null : (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button onClick={openCreate}>
+
                 <Plus className="size-4" /> Add subject
               </Button>
             </DialogTrigger>
@@ -258,7 +262,9 @@ function SubjectsPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )
         }
+
       />
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -288,12 +294,18 @@ function SubjectsPage() {
       {list.length === 0 ? (
         <EmptyState
           icon={Layers}
-          title="No subjects yet"
-          description="Create your first subject and start building units and topics under it."
+          title={canManage ? "No subjects yet" : "No courses available yet"}
+          description={
+            canManage
+              ? "Create your first subject and start building units and topics under it."
+              : "Your instructor hasn't published any courses for you yet. Check back soon."
+          }
           action={
-            <Button onClick={openCreate}>
-              <Plus className="size-4" /> Add subject
-            </Button>
+            canManage ? (
+              <Button onClick={openCreate}>
+                <Plus className="size-4" /> Add subject
+              </Button>
+            ) : undefined
           }
         />
       ) : (
@@ -302,6 +314,7 @@ function SubjectsPage() {
             <SubjectCard
               key={s.id}
               subject={s}
+              canManage={canManage}
               onEdit={() => openEdit(s)}
               onDelete={() => remove.mutate(s.id)}
               onToggle={(values) => update.mutate({ id: s.id, values })}
@@ -310,23 +323,27 @@ function SubjectsPage() {
           ))}
         </div>
       )}
+
     </div>
   );
 }
 
 function SubjectCard({
   subject,
+  canManage,
   onEdit,
   onDelete,
   onToggle,
   onMove,
 }: {
   subject: Subject;
+  canManage: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onToggle: (values: Partial<Subject>) => void;
   onMove: (dir: -1 | 1) => void;
 }) {
+
   const topics = useList("topics", {
     key: ["by-subject", subject.id],
     build: (q) => q.eq("subject_id", subject.id),
@@ -368,6 +385,7 @@ function SubjectCard({
               .join(" · ") || "No metadata"}
           </p>
         </Link>
+        {canManage && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Subject actions">
@@ -395,6 +413,8 @@ function SubjectCard({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
+
       </div>
 
       <Progress value={pct} className="mt-4 h-1.5" />

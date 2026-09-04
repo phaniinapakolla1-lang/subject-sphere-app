@@ -9,6 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { demoDelete, demoFrom, demoInsert, demoUpdate, isDemo } from "@/lib/demo";
+import {
+  CONTENT_TABLES,
+  contentCreate,
+  contentDelete,
+  contentUpdate,
+} from "@/lib/content.functions";
 
 export type Tables = Database["public"]["Tables"];
 export type TableName = keyof Tables & string;
@@ -82,11 +88,42 @@ function invalidate(qc: ReturnType<typeof useQueryClient>, table: string) {
   qc.invalidateQueries({ queryKey: ["search"] });
 }
 
+/** Personal study state students may still write directly on shared topics. */
+const PERSONAL_TOPIC_FIELDS = new Set([
+  "completed",
+  "bookmarked",
+  "favorite",
+  "weak",
+  "revision_count",
+  "last_revised_at",
+  "next_revision_at",
+  "updated_at",
+]);
+
+function isContentTable(table: string): boolean {
+  return (CONTENT_TABLES as readonly string[]).includes(table);
+}
+
+/** Content writes go through admin-only server functions, except personal topic state. */
+function routeThroughAdmin(table: string, values?: Record<string, unknown>): boolean {
+  if (!isContentTable(table)) return false;
+  if (table === "topics" && values) {
+    const keys = Object.keys(values);
+    if (keys.length > 0 && keys.every((k) => PERSONAL_TOPIC_FIELDS.has(k))) return false;
+  }
+  return true;
+}
+
 export function useCreate<K extends TableName>(table: K, message?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (values: Insert<K>) => {
       if (isDemo()) return demoInsert(table, values) as Row<K>;
+      if (routeThroughAdmin(table)) {
+        return (await contentCreate({
+          data: { table, values: values as Record<string, unknown> },
+        })) as Row<K>;
+      }
       const { data, error } = await (supabase.from(table) as any)
         .insert(values as any)
         .select()
@@ -107,6 +144,11 @@ export function useUpdate<K extends TableName>(table: K, opts?: { silent?: boole
   return useMutation({
     mutationFn: async ({ id, values }: { id: string; values: Update<K> }) => {
       if (isDemo()) return demoUpdate(table, id, values) as Row<K>;
+      if (routeThroughAdmin(table, values as Record<string, unknown>)) {
+        return (await contentUpdate({
+          data: { table, id, values: values as Record<string, unknown> },
+        })) as Row<K>;
+      }
       const { data, error } = await (supabase.from(table) as any)
         .update(values as any)
         .eq("id", id)
@@ -128,6 +170,10 @@ export function useRemove<K extends TableName>(table: K, message = "Deleted") {
   return useMutation({
     mutationFn: async (id: string) => {
       if (isDemo()) return demoDelete(table, id);
+      if (routeThroughAdmin(table)) {
+        await contentDelete({ data: { table, id } });
+        return id;
+      }
       const { error } = await (supabase.from(table) as any).delete().eq("id", id);
       if (error) throw error;
       return id;
@@ -139,3 +185,4 @@ export function useRemove<K extends TableName>(table: K, message = "Deleted") {
     onError: (e: any) => toast.error(e.message ?? "Could not delete"),
   });
 }
+

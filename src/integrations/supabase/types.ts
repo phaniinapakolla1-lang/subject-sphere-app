@@ -554,6 +554,7 @@ export type Database = {
           code: string | null
           color: string
           created_at: string
+          created_by: string | null
           credits: number | null
           description: string | null
           duration: string | null
@@ -572,6 +573,7 @@ export type Database = {
           status: string
           thumbnail_url: string | null
           updated_at: string
+          updated_by: string | null
           user_id: string
           visibility: string
         }
@@ -582,6 +584,7 @@ export type Database = {
           code?: string | null
           color?: string
           created_at?: string
+          created_by?: string | null
           credits?: number | null
           description?: string | null
           duration?: string | null
@@ -600,6 +603,7 @@ export type Database = {
           status?: string
           thumbnail_url?: string | null
           updated_at?: string
+          updated_by?: string | null
           user_id: string
           visibility?: string
         }
@@ -610,6 +614,7 @@ export type Database = {
           code?: string | null
           color?: string
           created_at?: string
+          created_by?: string | null
           credits?: number | null
           description?: string | null
           duration?: string | null
@@ -628,6 +633,7 @@ export type Database = {
           status?: string
           thumbnail_url?: string | null
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
           visibility?: string
         }
@@ -705,6 +711,8 @@ export type Database = {
           completed: boolean
           content: Json
           created_at: string
+          created_by: string | null
+          description: string | null
           difficulty: string
           estimated_minutes: number
           favorite: boolean
@@ -714,11 +722,13 @@ export type Database = {
           position: number
           previous_question: boolean
           priority: string
+          published: boolean
           revision_count: number
           subject_id: string
           title: string
           unit_id: string
           updated_at: string
+          updated_by: string | null
           user_id: string
           weak: boolean
         }
@@ -727,6 +737,8 @@ export type Database = {
           completed?: boolean
           content?: Json
           created_at?: string
+          created_by?: string | null
+          description?: string | null
           difficulty?: string
           estimated_minutes?: number
           favorite?: boolean
@@ -736,11 +748,13 @@ export type Database = {
           position?: number
           previous_question?: boolean
           priority?: string
+          published?: boolean
           revision_count?: number
           subject_id: string
           title: string
           unit_id: string
           updated_at?: string
+          updated_by?: string | null
           user_id: string
           weak?: boolean
         }
@@ -749,6 +763,8 @@ export type Database = {
           completed?: boolean
           content?: Json
           created_at?: string
+          created_by?: string | null
+          description?: string | null
           difficulty?: string
           estimated_minutes?: number
           favorite?: boolean
@@ -758,11 +774,13 @@ export type Database = {
           position?: number
           previous_question?: boolean
           priority?: string
+          published?: boolean
           revision_count?: number
           subject_id?: string
           title?: string
           unit_id?: string
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
           weak?: boolean
         }
@@ -786,38 +804,47 @@ export type Database = {
       units: {
         Row: {
           created_at: string
+          created_by: string | null
           description: string | null
           estimated_hours: number | null
           id: string
           name: string
           position: number
           priority: string
+          published: boolean
           subject_id: string
           updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           estimated_hours?: number | null
           id?: string
           name: string
           position?: number
           priority?: string
+          published?: boolean
           subject_id: string
           updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           estimated_hours?: number | null
           id?: string
           name?: string
           position?: number
           priority?: string
+          published?: boolean
           subject_id?: string
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: [
