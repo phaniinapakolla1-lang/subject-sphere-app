@@ -294,12 +294,18 @@ function SubjectsPage() {
       {list.length === 0 ? (
         <EmptyState
           icon={Layers}
-          title="No subjects yet"
-          description="Create your first subject and start building units and topics under it."
+          title={canManage ? "No subjects yet" : "No courses available yet"}
+          description={
+            canManage
+              ? "Create your first subject and start building units and topics under it."
+              : "Your instructor hasn't published any courses for you yet. Check back soon."
+          }
           action={
-            <Button onClick={openCreate}>
-              <Plus className="size-4" /> Add subject
-            </Button>
+            canManage ? (
+              <Button onClick={openCreate}>
+                <Plus className="size-4" /> Add subject
+              </Button>
+            ) : undefined
           }
         />
       ) : (
@@ -308,6 +314,7 @@ function SubjectsPage() {
             <SubjectCard
               key={s.id}
               subject={s}
+              canManage={canManage}
               onEdit={() => openEdit(s)}
               onDelete={() => remove.mutate(s.id)}
               onToggle={(values) => update.mutate({ id: s.id, values })}
@@ -316,6 +323,7 @@ function SubjectsPage() {
           ))}
         </div>
       )}
+
     </div>
   );
 }
