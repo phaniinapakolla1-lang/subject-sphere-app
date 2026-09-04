@@ -273,7 +273,8 @@ function SubjectDetail() {
           icon={Plus}
           title="No units yet"
           description="Split this subject into units, then add topics inside each unit."
-          action={<Button onClick={() => openUnit()}>Add your first unit</Button>}
+          description={canManage ? "Split this subject into units, then add topics inside each unit." : "Your instructor hasn't added any content to this course yet."}
+          action={canManage ? <Button onClick={() => openUnit()}>Add your first unit</Button> : undefined}
         />
       ) : (
         <div className="space-y-4">
@@ -281,6 +282,7 @@ function SubjectDetail() {
             <UnitBlock
               key={u.id}
               unit={u}
+              canManage={canManage}
               topics={allTopics.filter((t) => t.unit_id === u.id)}
               onEdit={() => openUnit(u)}
               onDelete={() => removeUnit.mutate(u.id)}
@@ -412,6 +414,7 @@ type TopicTemplate = "blank" | "standard";
 
 function UnitBlock({
   unit,
+  canManage,
   topics,
   onEdit,
   onDelete,
@@ -423,6 +426,7 @@ function UnitBlock({
   onTopicDuplicate,
 }: {
   unit: Unit;
+  canManage: boolean;
   topics: Topic[];
   onEdit: () => void;
   onDelete: () => void;
@@ -462,6 +466,7 @@ function UnitBlock({
             {done}/{topics.length}
           </div>
         </div>
+        {canManage && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Unit actions">
@@ -532,12 +537,19 @@ function UnitBlock({
                 <DropdownMenuItem onClick={() => onTopicChange(t.id, { weak: !t.weak })}>
                   <TriangleAlert className="size-4" /> {t.weak ? "Not weak" : "Mark weak"}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onTopicDuplicate(t)}>
-                  <Copy className="size-4" /> Duplicate
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onTopicDelete(t.id)} className="text-destructive">
-                  <Trash2 className="size-4" /> Delete
-                </DropdownMenuItem>
+                {canManage && (
+                  <>
+                    <DropdownMenuItem onClick={() => onTopicDuplicate(t)}>
+                      <Copy className="size-4" /> Duplicate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onTopicDelete(t.id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="size-4" /> Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </li>
@@ -546,10 +558,11 @@ function UnitBlock({
 
       {topics.length === 0 && (
         <p className="mt-3 text-sm text-muted-foreground">
-          No topics in this unit yet — add your first one below.
+          {canManage ? "No topics in this unit yet — add your first one below." : "No topics published in this unit yet."}
         </p>
       )}
 
+      {canManage && (
       <form
         className="mt-3 flex flex-wrap gap-2"
         onSubmit={(e) => {
@@ -581,6 +594,7 @@ function UnitBlock({
           <ListPlus className="size-4" /> Add multiple
         </Button>
       </form>
+      )}
 
       <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
         <DialogContent>
