@@ -76,7 +76,9 @@ export const Route = createFileRoute("/_authenticated/subjects/$subjectId")({
 
 function SubjectDetail() {
   const { subjectId } = Route.useParams();
-  const { user } = useAuth();
+  const { user, isAdmin, demo } = useAuth();
+  const canManage = isAdmin || demo;
+
   const subject = useOne("subjects", subjectId);
   const units = useList("units", {
     key: ["of", subjectId],
