@@ -385,6 +385,7 @@ function SubjectCard({
               .join(" · ") || "No metadata"}
           </p>
         </Link>
+        {canManage && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Subject actions">
@@ -412,6 +413,8 @@ function SubjectCard({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
+
       </div>
 
       <Progress value={pct} className="mt-4 h-1.5" />
