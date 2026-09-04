@@ -86,7 +86,9 @@ const EMPTY: Draft = {
 };
 
 function SubjectsPage() {
-  const { user } = useAuth();
+  const { user, isAdmin, demo } = useAuth();
+  const canManage = isAdmin || demo;
+
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("position");
   const [showArchived, setShowArchived] = useState(false);
