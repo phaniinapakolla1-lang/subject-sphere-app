@@ -9,6 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { demoDelete, demoFrom, demoInsert, demoUpdate, isDemo } from "@/lib/demo";
+import {
+  CONTENT_TABLES,
+  contentCreate,
+  contentDelete,
+  contentUpdate,
+} from "@/lib/content.functions";
 
 export type Tables = Database["public"]["Tables"];
 export type TableName = keyof Tables & string;
