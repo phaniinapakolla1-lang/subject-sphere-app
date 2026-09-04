@@ -242,6 +242,7 @@ function SubjectDetail() {
         title={subject.data?.name ?? "Subject"}
         subtitle={subject.data?.description ?? "Units and topics"}
         actions={
+          canManage ? (
           <>
             <Button variant="outline" onClick={() => setImportOpen(true)}>
               <FileStack className="size-4" /> Import units
@@ -250,7 +251,9 @@ function SubjectDetail() {
               <Plus className="size-4" /> Add unit
             </Button>
           </>
+          ) : null
         }
+
       />
 
       <div className="panel mb-6 p-5">
