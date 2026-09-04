@@ -177,9 +177,11 @@ function SubjectsPage() {
         title="Subjects"
         subtitle="Every course you're studying, with units, topics and progress."
         actions={
+          !canManage ? null : (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button onClick={openCreate}>
+
                 <Plus className="size-4" /> Add subject
               </Button>
             </DialogTrigger>
