@@ -167,7 +167,7 @@ function TopicEditor() {
     );
   }
 
-  const canEdit = isAdmin || demo || (!!user && t.user_id === user.id);
+  const canEdit = isAdmin || demo;
   const modeSwitch = canEdit ? (
     <div className="inline-flex overflow-hidden rounded-lg border border-border">
       <button
