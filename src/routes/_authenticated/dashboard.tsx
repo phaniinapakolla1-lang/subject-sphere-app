@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Bookmark,
   CalendarClock,
-  CheckCircle2,
   Flame,
   Layers,
   NotebookPen,
