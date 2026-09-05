@@ -272,7 +272,7 @@ function SubjectDetail() {
         <EmptyState
           icon={Plus}
           title="No units yet"
-          description="Split this subject into units, then add topics inside each unit."
+          
           description={canManage ? "Split this subject into units, then add topics inside each unit." : "Your instructor hasn't added any content to this course yet."}
           action={canManage ? <Button onClick={() => openUnit()}>Add your first unit</Button> : undefined}
         />
@@ -488,6 +488,7 @@ function UnitBlock({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
 
       <Progress value={pct} className="mt-3 h-1.5" />
