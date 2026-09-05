@@ -378,6 +378,72 @@ export type Database = {
           },
         ]
       }
+      planner_slots: {
+        Row: {
+          created_at: string
+          due_at: string | null
+          duration_minutes: number
+          id: string
+          notes: string | null
+          position: number
+          slot_date: string
+          start_time: string | null
+          status: string
+          subject_id: string | null
+          title: string
+          topic_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          due_at?: string | null
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          position?: number
+          slot_date: string
+          start_time?: string | null
+          status?: string
+          subject_id?: string | null
+          title: string
+          topic_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          due_at?: string | null
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          position?: number
+          slot_date?: string
+          start_time?: string | null
+          status?: string
+          subject_id?: string | null
+          title?: string
+          topic_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planner_slots_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planner_slots_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           academic_year: string | null
