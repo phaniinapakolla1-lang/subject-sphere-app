@@ -387,7 +387,7 @@ function RingStat({
     <div className="flex items-center gap-4 rounded-xl border border-border p-4">
       {ring}
       <div className="min-w-0">
-        <div className="truncate text-sm font-semibold">{title}</div>
+        <div className="text-sm font-semibold">{title}</div>
         <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
       </div>
     </div>
