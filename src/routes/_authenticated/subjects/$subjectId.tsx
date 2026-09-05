@@ -488,6 +488,7 @@ function UnitBlock({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
 
       <Progress value={pct} className="mt-3 h-1.5" />
