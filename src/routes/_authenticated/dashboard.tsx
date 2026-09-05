@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Bookmark,
   CalendarClock,
-  CheckCircle2,
   Flame,
   Layers,
   NotebookPen,
@@ -23,7 +22,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useList, type Topic } from "@/lib/data";
 import { formatMinutes, useOverview } from "@/lib/stats";
-import { PageHeader, StatCard } from "@/components/ui-kit";
+import { ScrollHeader, ChakraRing } from "@/components/anime-kit";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,11 +96,19 @@ function Dashboard() {
   ];
   const pieColors = ["var(--chart-2)", "var(--muted)"];
 
+  const streakDays = stats?.streak ?? 0;
+  const streakPct = Math.min(100, Math.round((streakDays / 30) * 100));
+  const weakCount = stats?.weakTopics ?? 0;
+  const strongPct = stats?.topics
+    ? Math.max(0, 100 - Math.round((weakCount / stats.topics) * 100))
+    : 100;
+
   return (
     <div className="space-y-6 animate-rise">
-      <PageHeader
+      {/* Mission scroll welcome */}
+      <ScrollHeader
         title={`${greeting()}, ${name}`}
-        subtitle="Here's where your studying stands right now."
+        subtitle="Your training scroll for today — here's where your studying stands."
         actions={
           <Button asChild>
             <Link to="/subjects">
@@ -111,34 +118,69 @@ function Dashboard() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Study streak"
-          value={`${stats?.streak ?? 0} days`}
-          hint="Consecutive days with a logged session"
-          icon={Flame}
-          accent="warning"
-        />
-        <StatCard
-          label="Today's goal"
-          value={`${formatMinutes(stats?.minutesToday ?? 0)} / 2h`}
-          hint={`${todayPct}% of today's target`}
-          icon={Target}
-        />
-        <StatCard
-          label="Overall progress"
-          value={`${completion}%`}
-          hint={`${stats?.completedTopics ?? 0} of ${stats?.topics ?? 0} topics done`}
-          icon={CheckCircle2}
-          accent="success"
-        />
-        <StatCard
-          label="Weak topics"
-          value={stats?.weakTopics ?? 0}
-          hint="Flagged for extra revision"
-          icon={TriangleAlert}
-          accent="destructive"
-        />
+      {/* Chakra rings */}
+      <div className="panel p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <Flame className="size-4 text-primary" />
+          <h2 className="text-sm font-semibold">Chakra levels</h2>
+          <span className="ml-auto text-xs text-muted-foreground">
+            Live snapshot of your study energy
+          </span>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <RingStat
+            ring={
+              <ChakraRing
+                value={streakPct}
+                color="var(--chart-3)"
+                label={`${streakDays}d`}
+                sublabel="streak"
+              />
+            }
+            title="Study streak"
+            hint="Consecutive days with a logged session"
+          />
+          <RingStat
+            ring={
+              <ChakraRing
+                value={todayPct}
+                color="var(--chart-1)"
+                label={`${todayPct}%`}
+                sublabel={formatMinutes(stats?.minutesToday ?? 0)}
+              />
+            }
+            title="Today's goal"
+            hint={`${formatMinutes(stats?.minutesToday ?? 0)} of 2h target`}
+          />
+          <RingStat
+            ring={
+              <ChakraRing
+                value={completion}
+                color="var(--chart-2)"
+                label={`${completion}%`}
+                sublabel="complete"
+              />
+            }
+            title="Overall progress"
+            hint={`${stats?.completedTopics ?? 0} of ${stats?.topics ?? 0} topics done`}
+          />
+          <RingStat
+            ring={
+              <ChakraRing
+                value={strongPct}
+                color="var(--chart-5)"
+                label={`${weakCount}`}
+                sublabel="weak"
+              />
+            }
+            title="Weak topics"
+            hint={
+              weakCount === 0
+                ? "No weak spots — strong chakra control"
+                : "Flagged for extra revision"
+            }
+          />
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -327,6 +369,26 @@ function Dashboard() {
             <Muted>Add your first subject to start tracking progress.</Muted>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function RingStat({
+  ring,
+  title,
+  hint,
+}: {
+  ring: React.ReactNode;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <div className="flex items-center gap-4 rounded-xl border border-border p-4">
+      {ring}
+      <div className="min-w-0">
+        <div className="text-sm font-semibold">{title}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
       </div>
     </div>
   );

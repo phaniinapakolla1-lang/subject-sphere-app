@@ -235,6 +235,92 @@
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Anime-adventure theme: ninja scrolls + chakra rings                 */
+/* ------------------------------------------------------------------ */
+
+/*
+ * scroll-header — a parchment "mission scroll" banner.
+ * Flat horizontal scroll with rolled ends (pseudo-element rods),
+ * built purely from existing tokens so it themes in dark mode.
+ */
+@utility scroll-header {
+  position: relative;
+  overflow: visible;
+  background:
+    radial-gradient(
+      120% 160% at 8% 0%,
+      color-mix(in oklab, var(--primary) 10%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--surface) 94%, transparent),
+      color-mix(in oklab, var(--surface-2) 88%, transparent)
+    );
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    bottom: -7px;
+    width: 14px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--muted-foreground) 45%, var(--surface)),
+      color-mix(in oklab, var(--muted-foreground) 25%, var(--surface))
+    );
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+  }
+  &::before {
+    left: -6px;
+  }
+  &::after {
+    right: -6px;
+  }
+}
+
+/* Ink divider under scroll titles */
+@utility scroll-divider {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--primary),
+    color-mix(in oklab, var(--chart-4) 70%, transparent),
+    transparent
+  );
+}
+
+/* Rotating chakra aura behind progress rings */
+@utility chakra-aura {
+  position: absolute;
+  inset: -14%;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in oklab, var(--ring-color, var(--primary)) 45%, transparent) 60deg,
+    transparent 120deg,
+    transparent 200deg,
+    color-mix(in oklab, var(--ring-color, var(--primary)) 30%, transparent) 280deg,
+    transparent 340deg
+  );
+  animation: chakra-spin 6s linear infinite;
+  filter: blur(2px);
+}
+
+@keyframes chakra-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .fs-sm {
   font-size: 14px;
 }
