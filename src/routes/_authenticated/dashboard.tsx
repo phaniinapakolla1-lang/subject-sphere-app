@@ -375,6 +375,26 @@ function Dashboard() {
   );
 }
 
+function RingStat({
+  ring,
+  title,
+  hint,
+}: {
+  ring: React.ReactNode;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <div className="flex items-center gap-4 rounded-xl border border-border p-4">
+      {ring}
+      <div className="min-w-0">
+        <div className="truncate text-sm font-semibold">{title}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
+      </div>
+    </div>
+  );
+}
+
 function SubjectProgress({ id, name, color }: { id: string; name: string; color: string }) {
   const topics = useList("topics", {
     key: ["progress", id],
