@@ -41,12 +41,14 @@ export const contentCreate = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const values = {
-      ...data.values,
-      user_id: (data.values as any).user_id ?? context.userId,
-      created_by: context.userId,
-      updated_by: context.userId,
-    };
+    const values: Record<string, unknown> = { ...data.values };
+    if (OWNER_TABLES.has(data.table)) {
+      values["user_id"] = (data.values as any).user_id ?? context.userId;
+    }
+    if (AUTHORSHIP_TABLES.has(data.table)) {
+      values["created_by"] = context.userId;
+      values["updated_by"] = context.userId;
+    }
     const { data: row, error } = await (supabaseAdmin.from(data.table as any) as any)
       .insert(values)
       .select()
