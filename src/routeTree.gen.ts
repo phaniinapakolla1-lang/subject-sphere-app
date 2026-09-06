@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
 import { Route as CoursesIndexRouteImport } from './routes/courses/index'
 import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
+import { Route as AdminAdminContentRouteImport } from './routes/_admin/admin/content'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin/dashboard'
 import { Route as AdminAdminStudentsRouteImport } from './routes/_admin/admin/students'
 import { Route as AuthenticatedSubjectsIndexRouteImport } from './routes/_authenticated/subjects/index'
@@ -128,6 +129,11 @@ const CoursesSlugRoute = CoursesSlugRouteImport.update({
   path: '/courses/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAdminContentRoute = AdminAdminContentRouteImport.update({
+  id: '/admin/content',
+  path: '/admin/content',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   id: '/admin/dashboard',
   path: '/admin/dashboard',
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/timer': typeof AuthenticatedTimerRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/courses/': typeof CoursesIndexRoute
+  '/admin/content': typeof AdminAdminContentRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/students': typeof AdminAdminStudentsRoute
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/timer': typeof AuthenticatedTimerRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/courses': typeof CoursesIndexRoute
+  '/admin/content': typeof AdminAdminContentRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/students': typeof AdminAdminStudentsRoute
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/courses/': typeof CoursesIndexRoute
+  '/_admin/admin/content': typeof AdminAdminContentRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_admin/admin/students': typeof AdminAdminStudentsRoute
   '/_authenticated/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/timer'
     | '/courses/$slug'
     | '/courses/'
+    | '/admin/content'
     | '/admin/dashboard'
     | '/admin/students'
     | '/subjects/$subjectId'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/timer'
     | '/courses/$slug'
     | '/courses'
+    | '/admin/content'
     | '/admin/dashboard'
     | '/admin/students'
     | '/subjects/$subjectId'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/_authenticated/timer'
     | '/courses/$slug'
     | '/courses/'
+    | '/_admin/admin/content'
     | '/_admin/admin/dashboard'
     | '/_admin/admin/students'
     | '/_authenticated/subjects/$subjectId'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/admin/content': {
+      id: '/_admin/admin/content'
+      path: '/admin/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminAdminContentRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_admin/admin/dashboard': {
       id: '/_admin/admin/dashboard'
       path: '/admin/dashboard'
@@ -495,11 +514,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminAdminContentRoute: typeof AdminAdminContentRoute
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
   AdminAdminStudentsRoute: typeof AdminAdminStudentsRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAdminContentRoute: AdminAdminContentRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
   AdminAdminStudentsRoute: AdminAdminStudentsRoute,
 }

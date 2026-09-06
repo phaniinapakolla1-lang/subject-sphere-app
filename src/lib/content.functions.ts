@@ -3,8 +3,20 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /** Tables that only admins may write to. Everything else stays user-owned. */
-export const CONTENT_TABLES = ["subjects", "units", "topics", "topic_blocks"] as const;
+export const CONTENT_TABLES = [
+  "courses",
+  "subjects",
+  "units",
+  "topics",
+  "topic_blocks",
+] as const;
 export type ContentTable = (typeof CONTENT_TABLES)[number];
+
+/** Tables that physically carry authorship columns. topic_blocks does not. */
+const AUTHORSHIP_TABLES = new Set(["courses", "subjects", "units", "topics"]);
+
+/** Tables that carry a user_id ownership column. */
+const OWNER_TABLES = new Set(["subjects", "units", "topics", "topic_blocks"]);
 
 function assertTable(table: string): asserts table is ContentTable {
   if (!(CONTENT_TABLES as readonly string[]).includes(table)) {
@@ -29,12 +41,14 @@ export const contentCreate = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const values = {
-      ...data.values,
-      user_id: (data.values as any).user_id ?? context.userId,
-      created_by: context.userId,
-      updated_by: context.userId,
-    };
+    const values: Record<string, unknown> = { ...data.values };
+    if (OWNER_TABLES.has(data.table)) {
+      values["user_id"] = (data.values as any).user_id ?? context.userId;
+    }
+    if (AUTHORSHIP_TABLES.has(data.table)) {
+      values["created_by"] = context.userId;
+      values["updated_by"] = context.userId;
+    }
     const { data: row, error } = await (supabaseAdmin.from(data.table as any) as any)
       .insert(values)
       .select()
@@ -53,7 +67,11 @@ export const contentUpdate = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await (supabaseAdmin.from(data.table as any) as any)
-      .update({ ...data.values, updated_by: context.userId })
+      .update(
+        AUTHORSHIP_TABLES.has(data.table)
+          ? { ...data.values, updated_by: context.userId }
+          : { ...data.values },
+      )
       .eq("id", data.id)
       .select()
       .single();
@@ -75,4 +93,88 @@ export const contentDelete = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { id: data.id };
+  });
+
+type ImportTree = {
+  courseId?: string;
+  course?: string;
+  subjects: { name: string; units: { name: string; topics: { title: string }[] }[] }[];
+};
+
+/**
+ * Creates a whole Course → Subject → Unit → Topic tree in one call.
+ * Called only after the admin has reviewed the parsed preview.
+ */
+export const syllabusImport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: ImportTree) => input)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = context.userId as string;
+    const stamp = { created_by: uid, updated_by: uid };
+
+    let courseId = data.courseId ?? null;
+    if (!courseId) {
+      const { data: course, error } = await supabaseAdmin
+        .from("courses")
+        .insert({ name: data.course?.trim() || "Untitled course", ...stamp })
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      courseId = course.id;
+    }
+
+    let created = { subjects: 0, units: 0, topics: 0 };
+
+    for (const [si, s] of data.subjects.entries()) {
+      const { data: subject, error: se } = await supabaseAdmin
+        .from("subjects")
+        .insert({
+          user_id: uid,
+          course_id: courseId,
+          name: s.name,
+          position: si,
+          ...stamp,
+        })
+        .select("id")
+        .single();
+      if (se) throw new Error(se.message);
+      created.subjects++;
+
+      for (const [ui, u] of s.units.entries()) {
+        const { data: unit, error: ue } = await supabaseAdmin
+          .from("units")
+          .insert({
+            user_id: uid,
+            subject_id: subject.id,
+            name: u.name,
+            position: ui,
+            published: false,
+            ...stamp,
+          })
+          .select("id")
+          .single();
+        if (ue) throw new Error(ue.message);
+        created.units++;
+
+        if (u.topics.length) {
+          const { error: te } = await supabaseAdmin.from("topics").insert(
+            u.topics.map((t, ti) => ({
+              user_id: uid,
+              subject_id: subject.id,
+              unit_id: unit.id,
+              title: t.title,
+              position: ti,
+              published: false,
+              ...stamp,
+            })),
+          );
+          if (te) throw new Error(te.message);
+          created.topics += u.topics.length;
+        }
+      }
+    }
+
+    return { courseId, ...created };
   });
