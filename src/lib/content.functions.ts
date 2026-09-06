@@ -94,3 +94,87 @@ export const contentDelete = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { id: data.id };
   });
+
+type ImportTree = {
+  courseId?: string;
+  course?: string;
+  subjects: { name: string; units: { name: string; topics: { title: string }[] }[] }[];
+};
+
+/**
+ * Creates a whole Course → Subject → Unit → Topic tree in one call.
+ * Called only after the admin has reviewed the parsed preview.
+ */
+export const syllabusImport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: ImportTree) => input)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uid = context.userId as string;
+    const stamp = { created_by: uid, updated_by: uid };
+
+    let courseId = data.courseId ?? null;
+    if (!courseId) {
+      const { data: course, error } = await supabaseAdmin
+        .from("courses")
+        .insert({ name: data.course?.trim() || "Untitled course", ...stamp })
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      courseId = course.id;
+    }
+
+    let created = { subjects: 0, units: 0, topics: 0 };
+
+    for (const [si, s] of data.subjects.entries()) {
+      const { data: subject, error: se } = await supabaseAdmin
+        .from("subjects")
+        .insert({
+          user_id: uid,
+          course_id: courseId,
+          name: s.name,
+          position: si,
+          ...stamp,
+        })
+        .select("id")
+        .single();
+      if (se) throw new Error(se.message);
+      created.subjects++;
+
+      for (const [ui, u] of s.units.entries()) {
+        const { data: unit, error: ue } = await supabaseAdmin
+          .from("units")
+          .insert({
+            user_id: uid,
+            subject_id: subject.id,
+            name: u.name,
+            position: ui,
+            published: false,
+            ...stamp,
+          })
+          .select("id")
+          .single();
+        if (ue) throw new Error(ue.message);
+        created.units++;
+
+        if (u.topics.length) {
+          const { error: te } = await supabaseAdmin.from("topics").insert(
+            u.topics.map((t, ti) => ({
+              user_id: uid,
+              subject_id: subject.id,
+              unit_id: unit.id,
+              title: t.title,
+              position: ti,
+              published: false,
+              ...stamp,
+            })),
+          );
+          if (te) throw new Error(te.message);
+          created.topics += u.topics.length;
+        }
+      }
+    }
+
+    return { courseId, ...created };
+  });
