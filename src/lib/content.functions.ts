@@ -3,8 +3,20 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /** Tables that only admins may write to. Everything else stays user-owned. */
-export const CONTENT_TABLES = ["subjects", "units", "topics", "topic_blocks"] as const;
+export const CONTENT_TABLES = [
+  "courses",
+  "subjects",
+  "units",
+  "topics",
+  "topic_blocks",
+] as const;
 export type ContentTable = (typeof CONTENT_TABLES)[number];
+
+/** Tables that physically carry authorship columns. topic_blocks does not. */
+const AUTHORSHIP_TABLES = new Set(["courses", "subjects", "units", "topics"]);
+
+/** Tables that carry a user_id ownership column. */
+const OWNER_TABLES = new Set(["subjects", "units", "topics", "topic_blocks"]);
 
 function assertTable(table: string): asserts table is ContentTable {
   if (!(CONTENT_TABLES as readonly string[]).includes(table)) {
