@@ -159,6 +159,51 @@ export type Database = {
           },
         ]
       }
+      courses: {
+        Row: {
+          academic_year: string | null
+          archived: boolean
+          code: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          position: number
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          academic_year?: string | null
+          archived?: boolean
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          position?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          academic_year?: string | null
+          archived?: boolean
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          position?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       exams: {
         Row: {
           created_at: string
@@ -619,6 +664,7 @@ export type Database = {
           category: string | null
           code: string | null
           color: string
+          course_id: string | null
           created_at: string
           created_by: string | null
           credits: number | null
@@ -649,6 +695,7 @@ export type Database = {
           category?: string | null
           code?: string | null
           color?: string
+          course_id?: string | null
           created_at?: string
           created_by?: string | null
           credits?: number | null
@@ -679,6 +726,7 @@ export type Database = {
           category?: string | null
           code?: string | null
           color?: string
+          course_id?: string | null
           created_at?: string
           created_by?: string | null
           credits?: number | null
@@ -703,7 +751,15 @@ export type Database = {
           user_id?: string
           visibility?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subjects_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       topic_blocks: {
         Row: {
