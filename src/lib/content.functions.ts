@@ -67,7 +67,11 @@ export const contentUpdate = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await (supabaseAdmin.from(data.table as any) as any)
-      .update({ ...data.values, updated_by: context.userId })
+      .update(
+        AUTHORSHIP_TABLES.has(data.table)
+          ? { ...data.values, updated_by: context.userId }
+          : { ...data.values },
+      )
       .eq("id", data.id)
       .select()
       .single();
