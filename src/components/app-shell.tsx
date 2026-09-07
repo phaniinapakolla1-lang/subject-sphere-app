@@ -5,6 +5,7 @@ import {
   BookOpen,
   Brain,
   CalendarClock,
+  CalendarDays,
   ClipboardList,
   FileStack,
   LayoutDashboard,
@@ -41,7 +42,9 @@ const NAV = [
   { to: "/subjects", label: "Subjects", icon: Layers },
   { to: "/notes", label: "Notes", icon: NotebookPen },
   { to: "/flashcards", label: "Flashcards", icon: Brain },
+  { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/revision", label: "Revision", icon: RefreshCw },
+
   { to: "/timer", label: "Focus Timer", icon: Timer },
   { to: "/assignments", label: "Assignments", icon: ClipboardList },
   { to: "/exams", label: "Exams", icon: CalendarClock },

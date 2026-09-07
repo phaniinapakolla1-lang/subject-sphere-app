@@ -157,7 +157,7 @@ function AdminContent() {
     <div className="space-y-6">
       <PageHeader
         title="Content manager"
-        description="Course → Subject → Unit → Topic. Everything students read lives here."
+        subtitle="Course → Subject → Unit → Topic. Everything students read lives here."
         actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setImportOpen(true)}>
@@ -317,20 +317,21 @@ function AdminContent() {
 function Node(props: {
   icon: React.ReactNode;
   label: string;
-  meta?: string;
+  meta?: string | undefined;
   depth: number;
-  open?: boolean;
-  onToggle?: () => void;
-  published?: boolean;
-  onPublish?: () => void;
-  onRename?: () => void;
-  onUp?: () => void;
-  onDown?: () => void;
-  onDelete?: () => void;
-  onAdd?: () => void;
-  addLabel?: string;
-  href?: React.ReactNode;
+  open?: boolean | undefined;
+  onToggle?: (() => void) | undefined;
+  published?: boolean | undefined;
+  onPublish?: (() => void) | undefined;
+  onRename?: (() => void) | undefined;
+  onUp?: (() => void) | undefined;
+  onDown?: (() => void) | undefined;
+  onDelete?: (() => void) | undefined;
+  onAdd?: (() => void) | undefined;
+  addLabel?: string | undefined;
+  href?: React.ReactNode | undefined;
 }) {
+
   const pad = [16, 36, 60, 84][props.depth] ?? 16;
   return (
     <div

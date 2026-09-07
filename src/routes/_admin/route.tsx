@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LayoutDashboard, LogOut, ShieldCheck, Users } from "lucide-react";
+import { Layers, LayoutDashboard, LogOut, ShieldCheck, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -49,6 +49,13 @@ function AdminLayout() {
               <LayoutDashboard className="size-4" /> Overview
             </Link>
             <Link
+              to="/admin/content"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+              activeProps={{ className: "bg-accent text-foreground font-medium" }}
+            >
+              <Layers className="size-4" /> Content
+            </Link>
+            <Link
               to="/admin/students"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
               activeProps={{ className: "bg-accent text-foreground font-medium" }}
@@ -56,6 +63,7 @@ function AdminLayout() {
               <Users className="size-4" /> Students
             </Link>
           </nav>
+
           <Button variant="ghost" size="sm" className="ml-auto" onClick={signOut}>
             <LogOut className="size-4" /> Sign out
           </Button>

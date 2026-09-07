@@ -23,6 +23,7 @@ import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedPapersRouteImport } from './routes/_authenticated/papers'
+import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedRevisionRouteImport } from './routes/_authenticated/revision'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
@@ -104,6 +105,11 @@ const AuthenticatedPapersRoute = AuthenticatedPapersRouteImport.update({
   path: '/papers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRevisionRoute = AuthenticatedRevisionRouteImport.update({
   id: '/revision',
   path: '/revision',
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/papers': typeof AuthenticatedPapersRoute
+  '/planner': typeof AuthenticatedPlannerRoute
   '/revision': typeof AuthenticatedRevisionRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/papers': typeof AuthenticatedPapersRoute
+  '/planner': typeof AuthenticatedPlannerRoute
   '/revision': typeof AuthenticatedRevisionRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/papers': typeof AuthenticatedPapersRoute
+  '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/revision': typeof AuthenticatedRevisionRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
@@ -256,6 +265,7 @@ export interface FileRouteTypes {
     | '/flashcards'
     | '/notes'
     | '/papers'
+    | '/planner'
     | '/revision'
     | '/settings'
     | '/timer'
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/flashcards'
     | '/notes'
     | '/papers'
+    | '/planner'
     | '/revision'
     | '/settings'
     | '/timer'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/_authenticated/flashcards'
     | '/_authenticated/notes'
     | '/_authenticated/papers'
+    | '/_authenticated/planner'
     | '/_authenticated/revision'
     | '/_authenticated/settings'
     | '/_authenticated/timer'
@@ -433,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPapersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/planner': {
+      id: '/_authenticated/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/revision': {
       id: '/_authenticated/revision'
       path: '/revision'
@@ -537,6 +556,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedPapersRoute: typeof AuthenticatedPapersRoute
+  AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedRevisionRoute: typeof AuthenticatedRevisionRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
@@ -553,6 +573,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedPapersRoute: AuthenticatedPapersRoute,
+  AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedRevisionRoute: AuthenticatedRevisionRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
