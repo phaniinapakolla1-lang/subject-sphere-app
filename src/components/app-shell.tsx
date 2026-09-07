@@ -5,6 +5,7 @@ import {
   BookOpen,
   Brain,
   CalendarClock,
+  CalendarDays,
   ClipboardList,
   FileStack,
   LayoutDashboard,
