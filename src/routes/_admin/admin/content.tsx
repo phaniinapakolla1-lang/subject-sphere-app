@@ -157,7 +157,7 @@ function AdminContent() {
     <div className="space-y-6">
       <PageHeader
         title="Content manager"
-        description="Course → Subject → Unit → Topic. Everything students read lives here."
+        subtitle="Course → Subject → Unit → Topic. Everything students read lives here."
         actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setImportOpen(true)}>
