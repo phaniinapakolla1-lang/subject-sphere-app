@@ -110,12 +110,18 @@ function Dashboard() {
         title={`${greeting()}, ${name}`}
         subtitle="Your training scroll for today — here's where your studying stands."
         actions={
-          <Button asChild>
-            <Link to="/subjects">
-              <Plus className="size-4" /> New subject
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline">
+              <Link to="/planner">Open planner</Link>
+            </Button>
+            <Button asChild>
+              <Link to="/subjects">
+                <Plus className="size-4" /> New subject
+              </Link>
+            </Button>
+          </div>
         }
+
       />
 
       {/* Chakra rings */}
