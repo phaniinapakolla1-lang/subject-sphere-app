@@ -16,6 +16,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StudentLoginRouteImport } from './routes/student-login'
+import { Route as WallpaperRouteImport } from './routes/wallpaper'
 import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -67,6 +68,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const StudentLoginRoute = StudentLoginRouteImport.update({
   id: '/student-login',
   path: '/student-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WallpaperRoute = WallpaperRouteImport.update({
+  id: '/wallpaper',
+  path: '/wallpaper',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAssignmentsRoute =
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/student-login': typeof StudentLoginRoute
+  '/wallpaper': typeof WallpaperRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/student-login': typeof StudentLoginRoute
+  '/wallpaper': typeof WallpaperRoute
   '/assignments': typeof AuthenticatedAssignmentsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/student-login': typeof StudentLoginRoute
+  '/wallpaper': typeof WallpaperRoute
   '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/student-login'
+    | '/wallpaper'
     | '/assignments'
     | '/assistant'
     | '/dashboard'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/student-login'
+    | '/wallpaper'
     | '/assignments'
     | '/assistant'
     | '/dashboard'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/student-login'
+    | '/wallpaper'
     | '/_authenticated/assignments'
     | '/_authenticated/assistant'
     | '/_authenticated/dashboard'
@@ -341,6 +353,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   StudentLoginRoute: typeof StudentLoginRoute
+  WallpaperRoute: typeof WallpaperRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
 }
@@ -394,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/student-login'
       fullPath: '/student-login'
       preLoaderRoute: typeof StudentLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallpaper': {
+      id: '/wallpaper'
+      path: '/wallpaper'
+      fullPath: '/wallpaper'
+      preLoaderRoute: typeof WallpaperRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/assignments': {
@@ -593,6 +613,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   StudentLoginRoute: StudentLoginRoute,
+  WallpaperRoute: WallpaperRoute,
   CoursesSlugRoute: CoursesSlugRoute,
   CoursesIndexRoute: CoursesIndexRoute,
 }
