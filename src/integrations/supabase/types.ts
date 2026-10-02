@@ -549,6 +549,60 @@ export type Database = {
         }
         Relationships: []
       }
+      publication_requests: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          id: string
+          number: number
+          requester_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          scope_id: string
+          scope_type: string
+          status: string
+          submitted_at: string
+          title: string
+          topic_count: number
+          unit_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          number?: number
+          requester_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scope_id: string
+          scope_type: string
+          status?: string
+          submitted_at?: string
+          title?: string
+          topic_count?: number
+          unit_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          number?: number
+          requester_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          scope_id?: string
+          scope_type?: string
+          status?: string
+          submitted_at?: string
+          title?: string
+          topic_count?: number
+          unit_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       resources: {
         Row: {
           created_at: string
@@ -820,6 +874,47 @@ export type Database = {
           },
           {
             foreignKeyName: "topic_blocks_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topic_revisions: {
+        Row: {
+          blocks: Json
+          created_at: string
+          id: string
+          owner_id: string
+          status: string
+          topic_id: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          blocks?: Json
+          created_at?: string
+          id?: string
+          owner_id: string
+          status?: string
+          topic_id: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          blocks?: Json
+          created_at?: string
+          id?: string
+          owner_id?: string
+          status?: string
+          topic_id?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_revisions_topic_id_fkey"
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
