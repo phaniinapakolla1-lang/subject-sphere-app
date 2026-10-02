@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { useOne, useUpdate } from "@/lib/data";
 import { useTheme } from "@/lib/theme";
 import { PageHeader } from "@/components/ui-kit";
+import { WallpaperDialog } from "@/components/wallpaper-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +37,7 @@ function SettingsPage() {
   const { theme, setTheme, fontSize, setFontSize } = useTheme();
   const [name, setName] = useState<string | null>(null);
   const [goal, setGoal] = useState<string | null>(null);
+  const [wallpaperOpen, setWallpaperOpen] = useState(false);
 
   const displayName = name ?? profile.data?.display_name ?? "";
   const dailyGoal = goal ?? String(profile.data?.daily_goal_minutes ?? 120);
@@ -100,6 +103,17 @@ function SettingsPage() {
         </div>
         <Button onClick={save}>Save settings</Button>
       </div>
+
+      <div className="panel mt-5 space-y-3 p-6">
+        <h2 className="font-semibold tracking-tight">Wallpaper</h2>
+        <p className="text-sm text-muted-foreground">
+          Set a picture you love as the background of your whole workspace.
+        </p>
+        <Button variant="outline" onClick={() => setWallpaperOpen(true)}>
+          <ImageIcon className="size-4" /> Change Wallpaper
+        </Button>
+      </div>
+      <WallpaperDialog open={wallpaperOpen} onOpenChange={setWallpaperOpen} />
     </div>
   );
 }

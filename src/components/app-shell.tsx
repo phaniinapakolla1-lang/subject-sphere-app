@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Layers,
   LogOut,
+  ImageIcon,
   Menu,
   Moon,
   NotebookPen,
@@ -28,6 +29,7 @@ import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/global-search";
+import { WallpaperDialog } from "@/components/wallpaper-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [wallpaperOpen, setWallpaperOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => setMobileOpen(false), [pathname]);
@@ -195,6 +198,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Change wallpaper"
+              onClick={() => setWallpaperOpen(true)}
+            >
+              <ImageIcon className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               aria-label="Toggle theme"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
@@ -206,6 +217,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+      <WallpaperDialog open={wallpaperOpen} onOpenChange={setWallpaperOpen} />
     </div>
   );
 }

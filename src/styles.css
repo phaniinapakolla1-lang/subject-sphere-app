@@ -321,6 +321,29 @@
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Custom wallpaper: let the image show through surfaces               */
+/* ------------------------------------------------------------------ */
+
+.has-wallpaper body {
+  background-color: transparent;
+}
+
+.has-wallpaper .bg-background {
+  background-color: color-mix(in oklab, var(--background) 55%, transparent);
+}
+
+.has-wallpaper .bg-sidebar {
+  background-color: color-mix(in oklab, var(--sidebar) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(130%);
+}
+
+.has-wallpaper .panel,
+.has-wallpaper .bg-card {
+  background-color: color-mix(in oklab, var(--card) 82%, transparent);
+  backdrop-filter: blur(10px);
+}
+
 .fs-sm {
   font-size: 14px;
 }
