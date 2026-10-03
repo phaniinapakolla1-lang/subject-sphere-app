@@ -32,6 +32,73 @@ async function assertAdmin(context: any) {
   if (error || !data) throw new Error("Only admins can manage course content");
 }
 
+async function isAdminCtx(context: any) {
+  const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  return !!data;
+}
+
+const LOCKED_FIELDS = ["published", "status", "published_at", "visibility", "created_by", "updated_by"];
+
+/** Owner (non-admin) may write only their own unpublished subjects/units/topics/blocks. */
+async function assertOwnerCan(sb: any, uid: string, table: string, row: Record<string, any>) {
+  const deny = () => {
+    throw new Error("You can only edit your own unpublished content. Create a revision or request publication instead.");
+  };
+  if (table === "courses") deny();
+  if (table === "subjects") {
+    if (row["user_id"] !== uid || row["status"] === "published") deny();
+    return;
+  }
+  if (table === "units" || table === "topics") {
+    if (row["user_id"] !== uid || row["published"]) deny();
+    return;
+  }
+  if (table === "topic_blocks") {
+    const { data: t } = await sb.from("topics").select("user_id,published").eq("id", row["topic_id"]).maybeSingle();
+    if (!t || t.user_id !== uid || t.published) deny();
+  }
+}
+
+async function parentRowFor(sb: any, table: string, values: Record<string, any>) {
+  if (table === "units") {
+    const { data } = await sb.from("subjects").select("user_id,status").eq("id", values["subject_id"]).maybeSingle();
+    return data ? { table: "subjects", row: data } : null;
+  }
+  if (table === "topics") {
+    const { data } = await sb.from("units").select("user_id,published").eq("id", values["unit_id"]).maybeSingle();
+    return data ? { table: "units", row: data } : null;
+  }
+  return null;
+}
+
+async function authorize(context: any, table: string, op: "create" | "update" | "delete", id?: string, values?: Record<string, any>) {
+  if (await isAdminCtx(context)) return { admin: true };
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const sb = supabaseAdmin as any;
+  const uid = context.userId as string;
+  if (op === "create") {
+    if (table === "subjects") return { admin: false };
+    if (table === "topic_blocks") {
+      await assertOwnerCan(sb, uid, table, values ?? {});
+      return { admin: false };
+    }
+    const parent = await parentRowFor(sb, table, values ?? {});
+    if (!parent) throw new Error("Parent not found");
+    await assertOwnerCan(sb, uid, parent.table, parent.row);
+    return { admin: false };
+  }
+  const { data: row } = await sb.from(table).select("*").eq("id", id).maybeSingle();
+  if (!row) throw new Error("Not found");
+  await assertOwnerCan(sb, uid, table, row);
+  return { admin: false };
+}
+
+function stripLocked(values: Record<string, unknown>) {
+  const out = { ...values };
+  for (const k of LOCKED_FIELDS) delete out[k];
+  return out;
+}
+
 export const contentCreate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { table: string; values: Record<string, unknown> }) => {
@@ -39,12 +106,13 @@ export const contentCreate = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const auth = await authorize(context, data.table, "create", undefined, data.values as any);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const values: Record<string, unknown> = { ...data.values };
+    const values: Record<string, unknown> = auth.admin ? { ...data.values } : stripLocked(data.values);
     if (OWNER_TABLES.has(data.table)) {
-      values["user_id"] = (data.values as any).user_id ?? context.userId;
+      values["user_id"] = auth.admin ? ((data.values as any).user_id ?? context.userId) : context.userId;
     }
+    if (!auth.admin && (data.table === "units" || data.table === "topics")) values["published"] = false;
     if (AUTHORSHIP_TABLES.has(data.table)) {
       values["created_by"] = context.userId;
       values["updated_by"] = context.userId;
@@ -64,13 +132,15 @@ export const contentUpdate = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const auth = await authorize(context, data.table, "update", data.id);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const base: Record<string, unknown> = auth.admin ? { ...data.values } : stripLocked(data.values);
+    if (!auth.admin) delete base["user_id"];
     const { data: row, error } = await (supabaseAdmin.from(data.table as any) as any)
       .update(
         AUTHORSHIP_TABLES.has(data.table)
-          ? { ...data.values, updated_by: context.userId }
-          : { ...data.values },
+          ? { ...base, updated_by: context.userId }
+          : base,
       )
       .eq("id", data.id)
       .select()
@@ -86,7 +156,7 @@ export const contentDelete = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await authorize(context, data.table, "delete", data.id);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin.from(data.table as any) as any)
       .delete()

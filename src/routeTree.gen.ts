@@ -22,9 +22,11 @@ import { Route as AuthenticatedAssistantRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedExamsRouteImport } from './routes/_authenticated/exams'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
+import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedPapersRouteImport } from './routes/_authenticated/papers'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
+import { Route as AuthenticatedPublishingRouteImport } from './routes/_authenticated/publishing'
 import { Route as AuthenticatedRevisionRouteImport } from './routes/_authenticated/revision'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/timer'
@@ -101,6 +103,11 @@ const AuthenticatedFlashcardsRoute = AuthenticatedFlashcardsRouteImport.update({
   path: '/flashcards',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLibraryRoute = AuthenticatedLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -114,6 +121,11 @@ const AuthenticatedPapersRoute = AuthenticatedPapersRouteImport.update({
 const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPublishingRoute = AuthenticatedPublishingRouteImport.update({
+  id: '/publishing',
+  path: '/publishing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRevisionRoute = AuthenticatedRevisionRouteImport.update({
@@ -187,9 +199,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
+  '/library': typeof AuthenticatedLibraryRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/papers': typeof AuthenticatedPapersRoute
   '/planner': typeof AuthenticatedPlannerRoute
+  '/publishing': typeof AuthenticatedPublishingRoute
   '/revision': typeof AuthenticatedRevisionRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
@@ -214,9 +228,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exams': typeof AuthenticatedExamsRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
+  '/library': typeof AuthenticatedLibraryRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/papers': typeof AuthenticatedPapersRoute
   '/planner': typeof AuthenticatedPlannerRoute
+  '/publishing': typeof AuthenticatedPublishingRoute
   '/revision': typeof AuthenticatedRevisionRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/timer': typeof AuthenticatedTimerRoute
@@ -244,9 +260,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exams': typeof AuthenticatedExamsRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
+  '/_authenticated/library': typeof AuthenticatedLibraryRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/papers': typeof AuthenticatedPapersRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
+  '/_authenticated/publishing': typeof AuthenticatedPublishingRoute
   '/_authenticated/revision': typeof AuthenticatedRevisionRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/timer': typeof AuthenticatedTimerRoute
@@ -273,9 +291,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/exams'
     | '/flashcards'
+    | '/library'
     | '/notes'
     | '/papers'
     | '/planner'
+    | '/publishing'
     | '/revision'
     | '/settings'
     | '/timer'
@@ -300,9 +320,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/exams'
     | '/flashcards'
+    | '/library'
     | '/notes'
     | '/papers'
     | '/planner'
+    | '/publishing'
     | '/revision'
     | '/settings'
     | '/timer'
@@ -329,9 +351,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/exams'
     | '/_authenticated/flashcards'
+    | '/_authenticated/library'
     | '/_authenticated/notes'
     | '/_authenticated/papers'
     | '/_authenticated/planner'
+    | '/_authenticated/publishing'
     | '/_authenticated/revision'
     | '/_authenticated/settings'
     | '/_authenticated/timer'
@@ -451,6 +475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFlashcardsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/library': {
+      id: '/_authenticated/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AuthenticatedLibraryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notes': {
       id: '/_authenticated/notes'
       path: '/notes'
@@ -470,6 +501,13 @@ declare module '@tanstack/react-router' {
       path: '/planner'
       fullPath: '/planner'
       preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/publishing': {
+      id: '/_authenticated/publishing'
+      path: '/publishing'
+      fullPath: '/publishing'
+      preLoaderRoute: typeof AuthenticatedPublishingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/revision': {
@@ -574,9 +612,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExamsRoute: typeof AuthenticatedExamsRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
+  AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedPapersRoute: typeof AuthenticatedPapersRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
+  AuthenticatedPublishingRoute: typeof AuthenticatedPublishingRoute
   AuthenticatedRevisionRoute: typeof AuthenticatedRevisionRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTimerRoute: typeof AuthenticatedTimerRoute
@@ -591,9 +631,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExamsRoute: AuthenticatedExamsRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
+  AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedPapersRoute: AuthenticatedPapersRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
+  AuthenticatedPublishingRoute: AuthenticatedPublishingRoute,
   AuthenticatedRevisionRoute: AuthenticatedRevisionRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTimerRoute: AuthenticatedTimerRoute,
