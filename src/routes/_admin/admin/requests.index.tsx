@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/request-publish";
 import { adminListRequests } from "@/lib/publishing.functions";
 
-export const Route = createFileRoute("/_admin/admin/requests")({
+export const Route = createFileRoute("/_admin/admin/requests/")({
   head: () => ({
     meta: [
       { title: "Publishing Requests — StudyOS Admin" },
@@ -23,11 +23,9 @@ export const Route = createFileRoute("/_admin/admin/requests")({
 const FILTERS = ["all", "pending_review", "changes_requested", "published", "rejected"];
 
 function RequestsPage() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [status, setStatus] = useState("pending_review");
   const list = useServerFn(adminListRequests);
   const q = useQuery({ queryKey: ["admin-requests", status], queryFn: () => list({ data: { status } }) });
-  if (pathname !== "/admin/requests") return <Outlet />;
 
   return (
     <div className="space-y-6">
