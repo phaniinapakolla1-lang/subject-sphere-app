@@ -38,6 +38,8 @@ import { Route as AdminAdminStudentsRouteImport } from './routes/_admin/admin/st
 import { Route as AuthenticatedSubjectsIndexRouteImport } from './routes/_authenticated/subjects/index'
 import { Route as AuthenticatedSubjectsSubjectIdRouteImport } from './routes/_authenticated/subjects/$subjectId'
 import { Route as AuthenticatedTopicsTopicIdRouteImport } from './routes/_authenticated/topics/$topicId'
+import { Route as AdminAdminRequestsIndexRouteImport } from './routes/_admin/admin/requests.index'
+import { Route as AdminAdminRequestsRequestIdRouteImport } from './routes/_admin/admin/requests.$requestId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -186,6 +188,17 @@ const AuthenticatedTopicsTopicIdRoute =
     path: '/topics/$topicId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AdminAdminRequestsIndexRoute = AdminAdminRequestsIndexRouteImport.update({
+  id: '/admin/requests/',
+  path: '/admin/requests/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAdminRequestsRequestIdRoute =
+  AdminAdminRequestsRequestIdRouteImport.update({
+    id: '/admin/requests/$requestId',
+    path: '/admin/requests/$requestId',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -215,6 +228,8 @@ export interface FileRoutesByFullPath {
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/subjects/': typeof AuthenticatedSubjectsIndexRoute
+  '/admin/requests/$requestId': typeof AdminAdminRequestsRequestIdRoute
+  '/admin/requests/': typeof AdminAdminRequestsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -244,6 +259,8 @@ export interface FileRoutesByTo {
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/subjects': typeof AuthenticatedSubjectsIndexRoute
+  '/admin/requests/$requestId': typeof AdminAdminRequestsRequestIdRoute
+  '/admin/requests': typeof AdminAdminRequestsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -276,6 +293,8 @@ export interface FileRoutesById {
   '/_authenticated/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/_authenticated/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/_authenticated/subjects/': typeof AuthenticatedSubjectsIndexRoute
+  '/_admin/admin/requests/$requestId': typeof AdminAdminRequestsRequestIdRoute
+  '/_admin/admin/requests/': typeof AdminAdminRequestsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -307,6 +326,8 @@ export interface FileRouteTypes {
     | '/subjects/$subjectId'
     | '/topics/$topicId'
     | '/subjects/'
+    | '/admin/requests/$requestId'
+    | '/admin/requests/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -336,6 +357,8 @@ export interface FileRouteTypes {
     | '/subjects/$subjectId'
     | '/topics/$topicId'
     | '/subjects'
+    | '/admin/requests/$requestId'
+    | '/admin/requests'
   id:
     | '__root__'
     | '/'
@@ -367,6 +390,8 @@ export interface FileRouteTypes {
     | '/_authenticated/subjects/$subjectId'
     | '/_authenticated/topics/$topicId'
     | '/_authenticated/subjects/'
+    | '/_admin/admin/requests/$requestId'
+    | '/_admin/admin/requests/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -587,6 +612,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTopicsTopicIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_admin/admin/requests/': {
+      id: '/_admin/admin/requests/'
+      path: '/admin/requests'
+      fullPath: '/admin/requests/'
+      preLoaderRoute: typeof AdminAdminRequestsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_admin/admin/requests/$requestId': {
+      id: '/_admin/admin/requests/$requestId'
+      path: '/admin/requests/$requestId'
+      fullPath: '/admin/requests/$requestId'
+      preLoaderRoute: typeof AdminAdminRequestsRequestIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
@@ -594,12 +633,16 @@ interface AdminRouteRouteChildren {
   AdminAdminContentRoute: typeof AdminAdminContentRoute
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
   AdminAdminStudentsRoute: typeof AdminAdminStudentsRoute
+  AdminAdminRequestsRequestIdRoute: typeof AdminAdminRequestsRequestIdRoute
+  AdminAdminRequestsIndexRoute: typeof AdminAdminRequestsIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdminContentRoute: AdminAdminContentRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
   AdminAdminStudentsRoute: AdminAdminStudentsRoute,
+  AdminAdminRequestsRequestIdRoute: AdminAdminRequestsRequestIdRoute,
+  AdminAdminRequestsIndexRoute: AdminAdminRequestsIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(

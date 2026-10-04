@@ -11,6 +11,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
+import { RequestPublishButton } from "@/components/request-publish";
 import { useAuth } from "@/lib/auth";
 import { useCreate, useList, useOne, useUpdate } from "@/lib/data";
 import { PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
@@ -167,25 +168,31 @@ function TopicEditor() {
     );
   }
 
-  const canEdit = isAdmin || demo;
-  const modeSwitch = canEdit ? (
-    <div className="inline-flex overflow-hidden rounded-lg border border-border">
-      <button
-        type="button"
-        onClick={() => setMode("read")}
-        className={`px-3 py-1.5 text-xs font-medium ${mode === "read" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
-      >
-        📖 Read
-      </button>
-      <button
-        type="button"
-        onClick={() => setMode("edit")}
-        className={`px-3 py-1.5 text-xs font-medium ${mode === "edit" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
-      >
-        ✏️ Edit
-      </button>
+  const isOwner = !!user && t.user_id === user.id;
+  const canEdit = isAdmin || demo || (isOwner && !t.published);
+  const modeSwitch = (
+    <div className="flex flex-wrap items-center gap-2">
+      {isOwner && !isAdmin && <RequestPublishButton scope="topic" id={t.id} />}
+      {canEdit && (
+        <div className="inline-flex overflow-hidden rounded-lg border border-border">
+          <button
+            type="button"
+            onClick={() => setMode("read")}
+            className={`px-3 py-1.5 text-xs font-medium ${mode === "read" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+          >
+            📖 Read
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("edit")}
+            className={`px-3 py-1.5 text-xs font-medium ${mode === "edit" ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+          >
+            ✏️ Edit
+          </button>
+        </div>
+      )}
     </div>
-  ) : null;
+  );
 
   if (mode === "read" || !canEdit) {
     return (

@@ -19,6 +19,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
+import { RequestPublishButton } from "@/components/request-publish";
 import { useAuth } from "@/lib/auth";
 import {
   useCreate,
@@ -77,9 +78,10 @@ export const Route = createFileRoute("/_authenticated/subjects/$subjectId")({
 function SubjectDetail() {
   const { subjectId } = Route.useParams();
   const { user, isAdmin, demo } = useAuth();
-  const canManage = isAdmin || demo;
-
   const subject = useOne("subjects", subjectId);
+  const isOwner = !!user && subject.data?.user_id === user.id;
+  const canManage =
+    isAdmin || demo || (isOwner && subject.data?.status !== "published");
   const units = useList("units", {
     key: ["of", subjectId],
     build: (q) => q.eq("subject_id", subjectId).order("position"),
@@ -244,14 +246,19 @@ function SubjectDetail() {
         title={subject.data?.name ?? "Subject"}
         subtitle={subject.data?.description ?? "Units and topics"}
         actions={
-          canManage ? (
+          canManage || isOwner ? (
           <>
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
-              <FileStack className="size-4" /> Import units
-            </Button>
-            <Button onClick={() => openUnit()}>
-              <Plus className="size-4" /> Add unit
-            </Button>
+            {isOwner && !isAdmin && <RequestPublishButton scope="subject" id={subjectId} />}
+            {canManage && (
+              <>
+                <Button variant="outline" onClick={() => setImportOpen(true)}>
+                  <FileStack className="size-4" /> Import units
+                </Button>
+                <Button onClick={() => openUnit()}>
+                  <Plus className="size-4" /> Add unit
+                </Button>
+              </>
+            )}
           </>
           ) : null
         }
