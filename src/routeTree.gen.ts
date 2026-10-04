@@ -34,11 +34,11 @@ import { Route as CoursesIndexRouteImport } from './routes/courses/index'
 import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
 import { Route as AdminAdminContentRouteImport } from './routes/_admin/admin/content'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin/admin/dashboard'
-import { Route as AdminAdminRequestsRouteImport } from './routes/_admin/admin/requests'
 import { Route as AdminAdminStudentsRouteImport } from './routes/_admin/admin/students'
 import { Route as AuthenticatedSubjectsIndexRouteImport } from './routes/_authenticated/subjects/index'
 import { Route as AuthenticatedSubjectsSubjectIdRouteImport } from './routes/_authenticated/subjects/$subjectId'
 import { Route as AuthenticatedTopicsTopicIdRouteImport } from './routes/_authenticated/topics/$topicId'
+import { Route as AdminAdminRequestsIndexRouteImport } from './routes/_admin/admin/requests.index'
 import { Route as AdminAdminRequestsRequestIdRouteImport } from './routes/_admin/admin/requests.$requestId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -165,11 +165,6 @@ const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   path: '/admin/dashboard',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminAdminRequestsRoute = AdminAdminRequestsRouteImport.update({
-  id: '/admin/requests',
-  path: '/admin/requests',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
 const AdminAdminStudentsRoute = AdminAdminStudentsRouteImport.update({
   id: '/admin/students',
   path: '/admin/students',
@@ -193,11 +188,16 @@ const AuthenticatedTopicsTopicIdRoute =
     path: '/topics/$topicId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AdminAdminRequestsIndexRoute = AdminAdminRequestsIndexRouteImport.update({
+  id: '/admin/requests/',
+  path: '/admin/requests/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminAdminRequestsRequestIdRoute =
   AdminAdminRequestsRequestIdRouteImport.update({
-    id: '/$requestId',
-    path: '/$requestId',
-    getParentRoute: () => AdminAdminRequestsRoute,
+    id: '/admin/requests/$requestId',
+    path: '/admin/requests/$requestId',
+    getParentRoute: () => AdminRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -224,12 +224,12 @@ export interface FileRoutesByFullPath {
   '/courses/': typeof CoursesIndexRoute
   '/admin/content': typeof AdminAdminContentRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
-  '/admin/requests': typeof AdminAdminRequestsRouteWithChildren
   '/admin/students': typeof AdminAdminStudentsRoute
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/subjects/': typeof AuthenticatedSubjectsIndexRoute
   '/admin/requests/$requestId': typeof AdminAdminRequestsRequestIdRoute
+  '/admin/requests/': typeof AdminAdminRequestsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -255,12 +255,12 @@ export interface FileRoutesByTo {
   '/courses': typeof CoursesIndexRoute
   '/admin/content': typeof AdminAdminContentRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
-  '/admin/requests': typeof AdminAdminRequestsRouteWithChildren
   '/admin/students': typeof AdminAdminStudentsRoute
   '/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/subjects': typeof AuthenticatedSubjectsIndexRoute
   '/admin/requests/$requestId': typeof AdminAdminRequestsRequestIdRoute
+  '/admin/requests': typeof AdminAdminRequestsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -289,12 +289,12 @@ export interface FileRoutesById {
   '/courses/': typeof CoursesIndexRoute
   '/_admin/admin/content': typeof AdminAdminContentRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
-  '/_admin/admin/requests': typeof AdminAdminRequestsRouteWithChildren
   '/_admin/admin/students': typeof AdminAdminStudentsRoute
   '/_authenticated/subjects/$subjectId': typeof AuthenticatedSubjectsSubjectIdRoute
   '/_authenticated/topics/$topicId': typeof AuthenticatedTopicsTopicIdRoute
   '/_authenticated/subjects/': typeof AuthenticatedSubjectsIndexRoute
   '/_admin/admin/requests/$requestId': typeof AdminAdminRequestsRequestIdRoute
+  '/_admin/admin/requests/': typeof AdminAdminRequestsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -322,12 +322,12 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/admin/content'
     | '/admin/dashboard'
-    | '/admin/requests'
     | '/admin/students'
     | '/subjects/$subjectId'
     | '/topics/$topicId'
     | '/subjects/'
     | '/admin/requests/$requestId'
+    | '/admin/requests/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -353,12 +353,12 @@ export interface FileRouteTypes {
     | '/courses'
     | '/admin/content'
     | '/admin/dashboard'
-    | '/admin/requests'
     | '/admin/students'
     | '/subjects/$subjectId'
     | '/topics/$topicId'
     | '/subjects'
     | '/admin/requests/$requestId'
+    | '/admin/requests'
   id:
     | '__root__'
     | '/'
@@ -386,12 +386,12 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/_admin/admin/content'
     | '/_admin/admin/dashboard'
-    | '/_admin/admin/requests'
     | '/_admin/admin/students'
     | '/_authenticated/subjects/$subjectId'
     | '/_authenticated/topics/$topicId'
     | '/_authenticated/subjects/'
     | '/_admin/admin/requests/$requestId'
+    | '/_admin/admin/requests/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -584,13 +584,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminDashboardRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/_admin/admin/requests': {
-      id: '/_admin/admin/requests'
-      path: '/admin/requests'
-      fullPath: '/admin/requests'
-      preLoaderRoute: typeof AdminAdminRequestsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/_admin/admin/students': {
       id: '/_admin/admin/students'
       path: '/admin/students'
@@ -619,39 +612,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTopicsTopicIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_admin/admin/requests/': {
+      id: '/_admin/admin/requests/'
+      path: '/admin/requests'
+      fullPath: '/admin/requests/'
+      preLoaderRoute: typeof AdminAdminRequestsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_admin/admin/requests/$requestId': {
       id: '/_admin/admin/requests/$requestId'
-      path: '/$requestId'
+      path: '/admin/requests/$requestId'
       fullPath: '/admin/requests/$requestId'
       preLoaderRoute: typeof AdminAdminRequestsRequestIdRouteImport
-      parentRoute: typeof AdminAdminRequestsRoute
+      parentRoute: typeof AdminRouteRoute
     }
   }
 }
 
-interface AdminAdminRequestsRouteChildren {
-  AdminAdminRequestsRequestIdRoute: typeof AdminAdminRequestsRequestIdRoute
-}
-
-const AdminAdminRequestsRouteChildren: AdminAdminRequestsRouteChildren = {
-  AdminAdminRequestsRequestIdRoute: AdminAdminRequestsRequestIdRoute,
-}
-
-const AdminAdminRequestsRouteWithChildren =
-  AdminAdminRequestsRoute._addFileChildren(AdminAdminRequestsRouteChildren)
-
 interface AdminRouteRouteChildren {
   AdminAdminContentRoute: typeof AdminAdminContentRoute
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
-  AdminAdminRequestsRoute: typeof AdminAdminRequestsRouteWithChildren
   AdminAdminStudentsRoute: typeof AdminAdminStudentsRoute
+  AdminAdminRequestsRequestIdRoute: typeof AdminAdminRequestsRequestIdRoute
+  AdminAdminRequestsIndexRoute: typeof AdminAdminRequestsIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdminContentRoute: AdminAdminContentRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
-  AdminAdminRequestsRoute: AdminAdminRequestsRouteWithChildren,
   AdminAdminStudentsRoute: AdminAdminStudentsRoute,
+  AdminAdminRequestsRequestIdRoute: AdminAdminRequestsRequestIdRoute,
+  AdminAdminRequestsIndexRoute: AdminAdminRequestsIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
