@@ -11,6 +11,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
+import { RequestPublishButton } from "@/components/request-publish";
 import { useAuth } from "@/lib/auth";
 import { useCreate, useList, useOne, useUpdate } from "@/lib/data";
 import { PRIORITIES, DIFFICULTIES, nextRevisionDate } from "@/lib/topic-schema";
