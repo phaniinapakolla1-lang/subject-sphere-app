@@ -8,6 +8,8 @@ import {
   CalendarDays,
   ClipboardList,
   FileStack,
+  Library,
+  Send,
   LayoutDashboard,
   Layers,
   LogOut,
@@ -42,6 +44,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/subjects", label: "Subjects", icon: Layers },
+  { to: "/library", label: "Published Library", icon: Library },
+  { to: "/publishing", label: "My Requests", icon: Send },
   { to: "/notes", label: "Notes", icon: NotebookPen },
   { to: "/flashcards", label: "Flashcards", icon: Brain },
   { to: "/planner", label: "Planner", icon: CalendarDays },
