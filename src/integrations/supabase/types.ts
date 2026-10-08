@@ -25,6 +25,7 @@ export type Database = {
           status: string
           subject_id: string | null
           title: string
+          topic_id: string | null
           updated_at: string
           user_id: string
         }
@@ -38,6 +39,7 @@ export type Database = {
           status?: string
           subject_id?: string | null
           title: string
+          topic_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -51,6 +53,7 @@ export type Database = {
           status?: string
           subject_id?: string | null
           title?: string
+          topic_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -60,6 +63,13 @@ export type Database = {
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
             referencedColumns: ["id"]
           },
         ]
@@ -333,6 +343,7 @@ export type Database = {
           subject_id: string | null
           tags: string[]
           title: string
+          topic_id: string | null
           updated_at: string
           user_id: string
         }
@@ -345,6 +356,7 @@ export type Database = {
           subject_id?: string | null
           tags?: string[]
           title?: string
+          topic_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -357,6 +369,7 @@ export type Database = {
           subject_id?: string | null
           tags?: string[]
           title?: string
+          topic_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -366,6 +379,13 @@ export type Database = {
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
             referencedColumns: ["id"]
           },
         ]
