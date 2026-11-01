@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "sdk_version": "3.4.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://hsqoorgzyvcbxozicayn.supabase.co/auth/v1",
+    "require_oauth_client_claim": true,
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "studyos-hub",
+      "version": "0.1.0",
+      "title": "StudyOS Hub"
+    },
+    "tools": [
+      {
+        "name": "list_courses",
+        "title": "List courses",
+        "description": "List the study courses and subjects visible to the signed-in user, with publication status and topic progress counts.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "include_drafts": {
+              "type": "boolean",
+              "description": "Include unpublished draft courses the user owns (admins see all drafts). Default false."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_topics",
+        "title": "List topics",
+        "description": "List study topics visible to the signed-in user, optionally filtered by course, a title search, or draft visibility.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "subject_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Only topics inside this course/subject."
+            },
+            "search": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Case-insensitive match on the topic title."
+            },
+            "include_drafts": {
+              "type": "boolean",
+              "description": "Include unpublished draft topics (only visible when the user may read them). Default false."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Maximum topics to return (default 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_topic_content",
+        "title": "Get topic content",
+        "description": "Read the full study-note content of one topic: its details and ordered content blocks (text, formula, code, media…).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "topic_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The topic to read. Use an id returned by list_topics."
+            }
+          },
+          "required": [
+            "topic_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_planner_slots",
+        "title": "List planner slots",
+        "description": "List the signed-in user's study-planner slots for the coming days, including planned topic, duration and status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30,
+              "description": "How many days ahead to include, starting today (default 7)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
