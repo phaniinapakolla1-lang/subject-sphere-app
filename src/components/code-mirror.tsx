@@ -185,7 +185,7 @@ export function CodeEditor({
     <div className="space-y-2 rounded-lg border border-border/70 bg-background/40 p-3">
       <div className="flex flex-wrap items-center gap-2">
         <Select value={language} onValueChange={(v) => onLanguageChange(v as CodeLanguageId)}>
-          <SelectTrigger size="sm" className="h-8 w-36">
+          <SelectTrigger className="h-8 w-36 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -295,7 +295,7 @@ export function CodeView({
       >
         <CodeMirror
           value={code}
-          height={expanded ? undefined : "280px"}
+          height={expanded ? "auto" : "280px"}
           theme={theme}
           extensions={[extension] as never}
           editable={false}
