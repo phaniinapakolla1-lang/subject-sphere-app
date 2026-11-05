@@ -44,16 +44,20 @@ function SettingsPage() {
 
   function save() {
     if (!user) return;
-    update.mutate({
-      id: user.id,
-      values: {
-        display_name: displayName || null,
-        daily_goal_minutes: Number(dailyGoal) || 0,
-        theme,
-        font_size: fontSize,
+    update.mutate(
+      {
+        id: user.id,
+        values: {
+          display_name: displayName || null,
+          daily_goal_minutes: Number(dailyGoal) || 0,
+          theme,
+          font_size: fontSize,
+        },
       },
-    });
-    toast.success("Settings saved");
+      {
+        onSuccess: () => toast.success("Settings saved"),
+      },
+    );
   }
 
   return (

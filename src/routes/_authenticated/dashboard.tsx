@@ -20,7 +20,7 @@ import {
   XAxis,
 } from "recharts";
 import { useAuth } from "@/lib/auth";
-import { useList, type Topic } from "@/lib/data";
+import { useList, useOne, type Topic } from "@/lib/data";
 import { formatMinutes, useOverview } from "@/lib/stats";
 import { ScrollHeader, ChakraRing } from "@/components/anime-kit";
 import { Progress } from "@/components/ui/progress";
@@ -49,7 +49,8 @@ function greeting() {
 function Dashboard() {
   const { user } = useAuth();
   const { data: stats } = useOverview();
-  const goal = 120;
+  const profile = useOne("profiles", user?.id);
+  const goal = profile.data?.daily_goal_minutes || 120;
 
   const subjects = useList("subjects", {
     key: ["dash"],
@@ -156,7 +157,7 @@ function Dashboard() {
               />
             }
             title="Today's goal"
-            hint={`${formatMinutes(stats?.minutesToday ?? 0)} of 2h target`}
+            hint={`${formatMinutes(stats?.minutesToday ?? 0)} of ${formatMinutes(goal)} target`}
           />
           <RingStat
             ring={

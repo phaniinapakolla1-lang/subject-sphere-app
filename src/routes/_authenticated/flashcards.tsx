@@ -56,6 +56,7 @@ function FlashcardsPage() {
   const [dialog, setDialog] = useState(false);
   const [draft, setDraft] = useState({ question: "", answer: "", subject_id: "none" });
   const [studying, setStudying] = useState(false);
+  const [queue, setQueue] = useState<Flashcard[]>([]);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
@@ -78,7 +79,7 @@ function FlashcardsPage() {
     setDialog(false);
   }
 
-  function grade(card: Flashcard, known: boolean) {
+  async function grade(card: Flashcard, known: boolean) {
     const box = known ? Math.min(card.box + 1, 5) : 1;
     update.mutate({
       id: card.id,
@@ -90,15 +91,18 @@ function FlashcardsPage() {
       },
     });
     setFlipped(false);
-    if (index + 1 >= due.length) {
+    // The queue was snapshotted when the session started, so regrading a card
+    // (which moves its due date into the future) can't shift or end the session.
+    if (index + 1 >= queue.length) {
       setStudying(false);
       setIndex(0);
+      setQueue([]);
     } else {
       setIndex(index + 1);
     }
   }
 
-  const current = due[index];
+  const current = queue[index];
 
   return (
     <div className="animate-rise">
@@ -113,6 +117,7 @@ function FlashcardsPage() {
             <Button
               disabled={due.length === 0}
               onClick={() => {
+                setQueue([...due]);
                 setStudying(true);
                 setIndex(0);
                 setFlipped(false);
@@ -138,7 +143,7 @@ function FlashcardsPage() {
       {studying && current ? (
         <div className="panel mx-auto max-w-2xl p-8 text-center">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Card {index + 1} of {due.length} · Box {current.box}
+            Card {index + 1} of {queue.length} · Box {current.box}
           </p>
           <button
             onClick={() => setFlipped((f) => !f)}
@@ -153,7 +158,7 @@ function FlashcardsPage() {
             </Button>
             <Button onClick={() => grade(current, true)}>Got it</Button>
           </div>
-          <Button variant="ghost" className="mt-4" onClick={() => setStudying(false)}>
+          <Button variant="ghost" className="mt-4" onClick={() => { setStudying(false); setQueue([]); setIndex(0); }}>
             End session
           </Button>
         </div>

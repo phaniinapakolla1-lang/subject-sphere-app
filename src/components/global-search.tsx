@@ -81,7 +81,11 @@ export function GlobalSearch({
           group: "Units",
           icon: FileText,
           go: () =>
-            navigate({ to: "/subjects/$subjectId", params: { subjectId: u.subject_id } }),
+            navigate({
+              to: "/subjects/$subjectId",
+              params: { subjectId: u.subject_id },
+              hash: `unit-${u.id}`,
+            }),
         }),
       );
       topics.data?.forEach((t: any) =>

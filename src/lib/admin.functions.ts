@@ -129,19 +129,49 @@ export const createStudent = createServerFn({ method: "POST" })
     return { id };
   });
 
+const STUDENT_PROFILE_FIELDS = [
+  "email",
+  "display_name",
+  "student_id",
+  "course",
+  "semester_label",
+  "section",
+  "academic_year",
+] as const;
+
 export const updateStudent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string; values: Partial<StudentInput> }) => input)
+  .inputValidator((input: { id: string; values: Partial<StudentInput> }) => {
+    if (input.values.password && input.values.password.length < 8)
+      throw new Error("Password must be at least 8 characters");
+    if (input.values.email && !input.values.email.includes("@"))
+      throw new Error("A valid email is required");
+    return input;
+  })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { role, password, ...profile } = data.values;
+    const { role, password, ...values } = data.values;
+    if (data.id === context.userId && role && role !== "admin")
+      throw new Error("You cannot remove your own admin role");
+    // Only known profile fields are written; unknown keys are ignored.
+    const profile: Record<string, unknown> = {};
+    for (const field of STUDENT_PROFILE_FIELDS) {
+      if (field in values) profile[field] = (values as Record<string, unknown>)[field];
+    }
     if (Object.keys(profile).length) {
       const { error } = await supabaseAdmin
         .from("profiles")
         .update(profile as any)
         .eq("id", data.id);
       if (error) throw new Error(error.message);
+      // Keep the auth account's email in sync when the profile email changes.
+      if (typeof profile.email === "string" && profile.email) {
+        const { error: authErr } = await supabaseAdmin.auth.admin.updateUserById(data.id, {
+          email: profile.email,
+        });
+        if (authErr) throw new Error(authErr.message);
+      }
     }
     if (password) {
       const { error } = await supabaseAdmin.auth.admin.updateUserById(data.id, { password });

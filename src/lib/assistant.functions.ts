@@ -1,8 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+// Signed-in students only — the AI gateway key must never serve anonymous callers.
 export const askAssistant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: { messages: Msg[] }) => input)
   .handler(async ({ data }) => {
     const key = process.env["LOVABLE_API_KEY"];
