@@ -166,9 +166,9 @@ export const updateStudent = createServerFn({ method: "POST" })
         .eq("id", data.id);
       if (error) throw new Error(error.message);
       // Keep the auth account's email in sync when the profile email changes.
-      if (typeof profile.email === "string" && profile.email) {
+      if (typeof profile["email"] === "string" && profile["email"]) {
         const { error: authErr } = await supabaseAdmin.auth.admin.updateUserById(data.id, {
-          email: profile.email,
+          email: profile["email"] as string,
         });
         if (authErr) throw new Error(authErr.message);
       }
