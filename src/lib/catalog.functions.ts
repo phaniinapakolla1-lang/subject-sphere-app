@@ -38,10 +38,12 @@ export const getPublicCourse = createServerFn({ method: "GET" })
   .inputValidator((input: { slug: string }) => ({ slug: String(input?.slug ?? "").slice(0, 120) }))
   .handler(async ({ data }) => {
     const supabase = publicClient();
+    // Subjects without a generated slug fall back to their id so catalog links never dead-end.
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.slug);
     const { data: course } = await supabase
       .from("subjects")
       .select(COURSE_COLUMNS)
-      .eq("slug", data.slug)
+      .eq(isUuid ? "id" : "slug", data.slug)
       .eq("status", "published")
       .eq("visibility", "public")
       .maybeSingle();

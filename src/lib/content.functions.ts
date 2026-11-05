@@ -117,6 +117,15 @@ export const contentCreate = createServerFn({ method: "POST" })
       values["created_by"] = context.userId;
       values["updated_by"] = context.userId;
     }
+    // Courses need a slug for the public catalog; derive one from the name when absent.
+    if (data.table === "subjects" && !values["slug"] && typeof values["name"] === "string") {
+      const base = (values["name"] as string)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60);
+      if (base) values["slug"] = `${base}-${Math.random().toString(36).slice(2, 7)}`;
+    }
     const { data: row, error } = await (supabaseAdmin.from(data.table as any) as any)
       .insert(values)
       .select()

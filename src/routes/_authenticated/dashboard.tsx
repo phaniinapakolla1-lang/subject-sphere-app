@@ -20,7 +20,7 @@ import {
   XAxis,
 } from "recharts";
 import { useAuth } from "@/lib/auth";
-import { useList, type Topic } from "@/lib/data";
+import { useList, useOne, type Topic } from "@/lib/data";
 import { formatMinutes, useOverview } from "@/lib/stats";
 import { ScrollHeader, ChakraRing } from "@/components/anime-kit";
 import { Progress } from "@/components/ui/progress";

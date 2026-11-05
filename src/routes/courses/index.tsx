@@ -81,7 +81,7 @@ function CatalogPage() {
             <Link
               key={c.id}
               to="/courses/$slug"
-              params={{ slug: c.slug ?? "" }}
+              params={{ slug: c.slug || c.id }}
               className="panel lift lift-hover overflow-hidden"
             >
               <div className="h-24 w-full" style={{ background: c.color ?? "var(--primary)" }} />
