@@ -92,7 +92,8 @@ function PlannerPage() {
 
   const all = (slots.data ?? []) as Slot[];
   const today = dayKey(new Date());
-  const visibleDays = view === "week" ? days : days.filter((d) => dayKey(d) === today);
+  // Day view always shows today, even if another week is being browsed.
+  const visibleDays = view === "week" ? days : [new Date()];
 
   const [draft, setDraft] = useState({
     title: "",
@@ -162,7 +163,10 @@ function PlannerPage() {
             <Button
               size="sm"
               variant={view === "week" ? "default" : "outline"}
-              onClick={() => setView(view === "week" ? "day" : "week")}
+              onClick={() => {
+                if (view === "week") setWeekStart(startOfWeek(new Date()));
+                setView(view === "week" ? "day" : "week");
+              }}
             >
               {view === "week" ? "Week" : "Today"}
             </Button>

@@ -49,7 +49,8 @@ function greeting() {
 function Dashboard() {
   const { user } = useAuth();
   const { data: stats } = useOverview();
-  const goal = 120;
+  const profile = useOne("profiles", user?.id);
+  const goal = profile.data?.daily_goal_minutes || 120;
 
   const subjects = useList("subjects", {
     key: ["dash"],
@@ -156,7 +157,7 @@ function Dashboard() {
               />
             }
             title="Today's goal"
-            hint={`${formatMinutes(stats?.minutesToday ?? 0)} of 2h target`}
+            hint={`${formatMinutes(stats?.minutesToday ?? 0)} of ${formatMinutes(goal)} target`}
           />
           <RingStat
             ring={
