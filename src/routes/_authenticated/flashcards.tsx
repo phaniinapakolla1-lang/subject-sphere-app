@@ -56,6 +56,7 @@ function FlashcardsPage() {
   const [dialog, setDialog] = useState(false);
   const [draft, setDraft] = useState({ question: "", answer: "", subject_id: "none" });
   const [studying, setStudying] = useState(false);
+  const [queue, setQueue] = useState<Flashcard[]>([]);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
